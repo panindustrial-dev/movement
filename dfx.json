@@ -1,0 +1,23 @@
+{
+  "canisters": {
+    
+    "example": {
+      "main": "src/canister.mo",
+      "type": "motoko"
+    },
+    "remote": {
+      "main": "src/remote.mo",
+      "type": "motoko"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": "mops sources"
+    },
+    "replica": {
+      "subnet_type": "system"
+    }
+  },
+  "version": 1
+}
