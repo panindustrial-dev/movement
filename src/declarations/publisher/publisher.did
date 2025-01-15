@@ -1,0 +1,475 @@
+type TimerId = nat;
+type Time = nat;
+type SubscriptionRecord = 
+ record {
+   config: ICRC16Map__3;
+   id: nat;
+   namespace: text;
+ };
+type Stats__2 = 
+ record {
+   cycles: nat;
+   expectedExecutionTime: opt Time;
+   lastExecutionTime: Time;
+   maxExecutions: nat;
+   minAction: opt ActionDetail;
+   nextActionId: nat;
+   nextTimer: opt TimerId;
+   timers: nat;
+ };
+type Stats__1 = 
+ record {
+   backlogs: vec record {
+                   nat;
+                   vec record {
+                         nat;
+                         EventNotification__1;
+                       };
+                 };
+   broadcasters: vec record {
+                       nat;
+                       vec principal;
+                     };
+   confirmAccumulator: vec record {
+                             principal;
+                             vec nat;
+                           };
+   confirmTimer: opt nat;
+   error: opt text;
+   icrc72OrchestratorCanister: principal;
+   lastEventId: vec record {
+                      text;
+                      vec record {
+                            nat;
+                            nat;
+                          };
+                    };
+   readyForSubscription: bool;
+   subscriptions: vec record {
+                        nat;
+                        SubscriptionRecord;
+                      };
+   tt: Stats__2;
+   validBroadcasters: variant {
+                        icrc75: ICRC75Item;
+                        list: vec principal;
+                      };
+ };
+type Stats = 
+ record {
+   broadcasters: vec record {
+                       text;
+                       vec principal;
+                     };
+   drainEventId: opt ActionId__1;
+   error: opt text;
+   eventsProcessing: bool;
+   icrc72OrchestratorCanister: principal;
+   icrc72Subscriber: Stats__1;
+   orchestrator: principal;
+   pendingEvents: vec EmitableEvent;
+   previousEventIds: vec record {
+                           text;
+                           record {
+                             nat;
+                             nat;
+                           };
+                         };
+   publications: vec record {
+                       nat;
+                       PublicationRecord;
+                     };
+   readyForPublications: bool;
+   tt: Stats__2;
+ };
+type Publisher = 
+ service {
+   getPublishErrors: () -> (vec record {
+                                  NewEvent;
+                                  PublishError;
+                                }) query;
+   getPublishedEvents: () -> (vec record {
+                                    NewEvent;
+                                    opt PublishResult;
+                                  }) query;
+   getUnhandledEvents: () -> (vec NewEvent) query;
+   get_stats: () -> (Stats) query;
+   get_subnet_for_canister: () ->
+    (variant {
+       Err: text;
+       Ok: record {subnet_id: opt principal;};
+     }) query;
+   hello: () -> (text);
+   icrc72_handle_notification: (vec EventNotification) -> () oneway;
+   registerSamplePublication: (vec PublicationRegistration) ->
+    (vec PublicationRegisterResult);
+   simulateBroadcastAssignment: (text, principal) -> () oneway;
+   simulateBroadcastAssignmentEvent: (text, principal) -> () oneway;
+   simulateBroadcastRemoval: (text, principal) -> () oneway;
+   simulateBroadcastRemovalEvent: (text, principal) -> () oneway;
+   simulateDeletePublication: (text) -> (PublicationDeleteResult);
+   simulatePublish: (vec NewEvent) -> (vec opt nat);
+   simulatePublishAsync: (vec NewEvent) -> (vec opt nat);
+   simulatePublishWithHandler: (vec NewEvent) -> (vec opt nat);
+   simulateUpdatePublication: (vec PublicationUpdateRequest) ->
+    (vec PublicationUpdateResult);
+ };
+type PublishResult = 
+ variant {
+   Err: PublishError;
+   Ok: vec nat;
+ };
+type PublishError = 
+ variant {
+   GenericError: GenericError__1;
+   PublicationNotFound;
+   Unauthorized;
+ };
+type PublicationUpdateResult = 
+ opt variant {
+       Err: PublicationUpdateError;
+       Ok: bool;
+     };
+type PublicationUpdateRequest = 
+ record {
+   config: record {
+             text;
+             ICRC16__1;
+           };
+   memo: opt blob;
+   publication: PublicationIdentifier;
+ };
+type PublicationUpdateError = 
+ variant {
+   GenericBatchError: text;
+   GenericError: GenericError;
+   ImproperConfig: text;
+   NotFound;
+   Unauthorized;
+ };
+type PublicationRegistration = 
+ record {
+   config: ICRC16Map;
+   memo: opt blob;
+   namespace: text;
+ };
+type PublicationRegisterResult = 
+ opt variant {
+       Err: PublicationRegisterError;
+       Ok: nat;
+     };
+type PublicationRegisterError = 
+ variant {
+   Exists: nat;
+   GenericBatchError: text;
+   GenericError: GenericError;
+   ImproperConfig: text;
+   Unauthorized;
+   UnauthorizedPublisher: record {namespace: Namespace;};
+ };
+type PublicationRecord = 
+ record {
+   id: nat;
+   namespace: text;
+ };
+type PublicationIdentifier = 
+ variant {
+   namespace: text;
+   publicationId: nat;
+ };
+type PublicationDeleteResult = 
+ opt variant {
+       Err: PublicationDeleteError;
+       Ok: bool;
+     };
+type PublicationDeleteError = 
+ variant {
+   GenericBatchError: text;
+   GenericError: GenericError;
+   NotFound;
+   Unauthorized;
+ };
+type NewEvent = 
+ record {
+   data: ICRC16;
+   headers: opt ICRC16Map;
+   namespace: text;
+ };
+type Namespace__1 = text;
+type Namespace = text;
+type InitArgs = record {
+                  restore:
+                   opt
+                    record {
+                      pendingEvents: vec EmitableEvent;
+                      previousEventIDs: vec record {
+                                              text;
+                                              record {
+                                                nat;
+                                                nat;
+                                              };
+                                            };
+                    };};
+type ICRC75Item = 
+ record {
+   namespace: Namespace__1;
+   "principal": principal;
+ };
+type ICRC16__3 = 
+ variant {
+   Array: vec ICRC16__3;
+   Blob: blob;
+   Bool: bool;
+   Bytes: vec nat8;
+   Class: vec ICRC16Property__3;
+   Float: float64;
+   Floats: vec float64;
+   Int: int;
+   Int16: int16;
+   Int32: int32;
+   Int64: int64;
+   Int8: int8;
+   Map: vec record {
+              text;
+              ICRC16__3;
+            };
+   Nat: nat;
+   Nat16: nat16;
+   Nat32: nat32;
+   Nat64: nat64;
+   Nat8: nat8;
+   Nats: vec nat;
+   Option: opt ICRC16__3;
+   Principal: principal;
+   Set: vec ICRC16__3;
+   Text: text;
+   ValueMap: vec record {
+                   ICRC16__3;
+                   ICRC16__3;
+                 };
+ };
+type ICRC16__2 = 
+ variant {
+   Array: vec ICRC16__2;
+   Blob: blob;
+   Bool: bool;
+   Bytes: vec nat8;
+   Class: vec ICRC16Property__2;
+   Float: float64;
+   Floats: vec float64;
+   Int: int;
+   Int16: int16;
+   Int32: int32;
+   Int64: int64;
+   Int8: int8;
+   Map: ICRC16Map__2;
+   Nat: nat;
+   Nat16: nat16;
+   Nat32: nat32;
+   Nat64: nat64;
+   Nat8: nat8;
+   Nats: vec nat;
+   Option: opt ICRC16__2;
+   Principal: principal;
+   Set: vec ICRC16__2;
+   Text: text;
+   ValueMap: vec record {
+                   ICRC16__2;
+                   ICRC16__2;
+                 };
+ };
+type ICRC16__1 = 
+ variant {
+   Array: vec ICRC16__1;
+   Blob: blob;
+   Bool: bool;
+   Bytes: vec nat8;
+   Class: vec ICRC16Property__1;
+   Float: float64;
+   Floats: vec float64;
+   Int: int;
+   Int16: int16;
+   Int32: int32;
+   Int64: int64;
+   Int8: int8;
+   Map: ICRC16Map__1;
+   Nat: nat;
+   Nat16: nat16;
+   Nat32: nat32;
+   Nat64: nat64;
+   Nat8: nat8;
+   Nats: vec nat;
+   Option: opt ICRC16__1;
+   Principal: principal;
+   Set: vec ICRC16__1;
+   Text: text;
+   ValueMap: vec record {
+                   ICRC16__1;
+                   ICRC16__1;
+                 };
+ };
+type ICRC16Property__3 = 
+ record {
+   immutable: bool;
+   name: text;
+   value: ICRC16__3;
+ };
+type ICRC16Property__2 = 
+ record {
+   immutable: bool;
+   name: text;
+   value: ICRC16__2;
+ };
+type ICRC16Property__1 = 
+ record {
+   immutable: bool;
+   name: text;
+   value: ICRC16__1;
+ };
+type ICRC16Property = 
+ record {
+   immutable: bool;
+   name: text;
+   value: ICRC16;
+ };
+type ICRC16Map__3 = 
+ vec record {
+       text;
+       ICRC16__3;
+     };
+type ICRC16Map__2 = 
+ vec record {
+       text;
+       ICRC16__2;
+     };
+type ICRC16Map__1 = 
+ vec record {
+       text;
+       ICRC16__1;
+     };
+type ICRC16Map = 
+ vec record {
+       text;
+       ICRC16;
+     };
+type ICRC16 = 
+ variant {
+   Array: vec ICRC16;
+   Blob: blob;
+   Bool: bool;
+   Bytes: vec nat8;
+   Class: vec ICRC16Property;
+   Float: float64;
+   Floats: vec float64;
+   Int: int;
+   Int16: int16;
+   Int32: int32;
+   Int64: int64;
+   Int8: int8;
+   Map: vec record {
+              text;
+              ICRC16;
+            };
+   Nat: nat;
+   Nat16: nat16;
+   Nat32: nat32;
+   Nat64: nat64;
+   Nat8: nat8;
+   Nats: vec nat;
+   Option: opt ICRC16;
+   Principal: principal;
+   Set: vec ICRC16;
+   Text: text;
+   ValueMap: vec record {
+                   ICRC16;
+                   ICRC16;
+                 };
+ };
+type GenericError__1 = 
+ record {
+   error_code: nat;
+   message: text;
+ };
+type GenericError = 
+ record {
+   error_code: nat;
+   message: text;
+ };
+type EventNotification__1 = 
+ record {
+   data: ICRC16__3;
+   eventId: nat;
+   filter: opt text;
+   headers: opt ICRC16Map__3;
+   id: nat;
+   namespace: text;
+   prevEventId: opt nat;
+   source: principal;
+   timestamp: nat;
+ };
+type EventNotification = 
+ record {
+   data: ICRC16__2;
+   eventId: nat;
+   filter: opt text;
+   headers: opt ICRC16Map__2;
+   id: nat;
+   namespace: text;
+   prevEventId: opt nat;
+   source: principal;
+   timestamp: nat;
+ };
+type EmitableEvent = 
+ record {
+   broadcaster: principal;
+   data: ICRC16;
+   headers: opt ICRC16Map;
+   id: nat;
+   namespace: text;
+   prevId: opt nat;
+   source: principal;
+   timestamp: nat;
+ };
+type Args = opt ArgList;
+type ArgList = 
+ record {
+   expectedExecutionTime: Time;
+   initialTimers: vec record {
+                        ActionId;
+                        Action;
+                      };
+   lastActionIdReported: opt nat;
+   lastCycleReport: opt nat;
+   lastExecutionTime: Time;
+   maxExecutions: opt nat;
+   nextActionId: nat;
+   nextCycleActionId: opt nat;
+ };
+type ActionId__1 = 
+ record {
+   id: nat;
+   time: Time;
+ };
+type ActionId = 
+ record {
+   id: nat;
+   time: Time;
+ };
+type ActionDetail = 
+ record {
+   ActionId;
+   Action;
+ };
+type Action = 
+ record {
+   aSync: opt nat;
+   actionType: text;
+   params: blob;
+   retries: nat;
+ };
+service : (opt
+            record {
+              icrc72PublisherArgs: opt InitArgs;
+              orchestrator: principal;
+              ttArgs: opt Args;
+            }) -> Publisher

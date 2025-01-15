@@ -1,0 +1,164 @@
+type Time = nat;
+type MVEvent = 
+ service {
+   getCounter: () -> (nat) query;
+   hello: () -> (text);
+   icrc72_handle_notification: (vec EventNotification) -> () oneway;
+   init: () -> ();
+   send: (nat) -> (vec opt nat);
+ };
+type InitArgs__1 = record {name: text;};
+type InitArgs = record {
+                  restore:
+                   opt
+                    record {
+                      pendingEvents: vec EmitableEvent;
+                      previousEventIDs: vec record {
+                                              text;
+                                              record {
+                                                nat;
+                                                nat;
+                                              };
+                                            };
+                    };};
+type ICRC16__1 = 
+ variant {
+   Array: vec ICRC16__1;
+   Blob: blob;
+   Bool: bool;
+   Bytes: vec nat8;
+   Class: vec ICRC16Property__1;
+   Float: float64;
+   Floats: vec float64;
+   Int: int;
+   Int16: int16;
+   Int32: int32;
+   Int64: int64;
+   Int8: int8;
+   Map: ICRC16Map__1;
+   Nat: nat;
+   Nat16: nat16;
+   Nat32: nat32;
+   Nat64: nat64;
+   Nat8: nat8;
+   Nats: vec nat;
+   Option: opt ICRC16__1;
+   Principal: principal;
+   Set: vec ICRC16__1;
+   Text: text;
+   ValueMap: vec record {
+                   ICRC16__1;
+                   ICRC16__1;
+                 };
+ };
+type ICRC16Property__1 = 
+ record {
+   immutable: bool;
+   name: text;
+   value: ICRC16__1;
+ };
+type ICRC16Property = 
+ record {
+   immutable: bool;
+   name: text;
+   value: ICRC16;
+ };
+type ICRC16Map__1 = 
+ vec record {
+       text;
+       ICRC16__1;
+     };
+type ICRC16Map = 
+ vec record {
+       text;
+       ICRC16;
+     };
+type ICRC16 = 
+ variant {
+   Array: vec ICRC16;
+   Blob: blob;
+   Bool: bool;
+   Bytes: vec nat8;
+   Class: vec ICRC16Property;
+   Float: float64;
+   Floats: vec float64;
+   Int: int;
+   Int16: int16;
+   Int32: int32;
+   Int64: int64;
+   Int8: int8;
+   Map: vec record {
+              text;
+              ICRC16;
+            };
+   Nat: nat;
+   Nat16: nat16;
+   Nat32: nat32;
+   Nat64: nat64;
+   Nat8: nat8;
+   Nats: vec nat;
+   Option: opt ICRC16;
+   Principal: principal;
+   Set: vec ICRC16;
+   Text: text;
+   ValueMap: vec record {
+                   ICRC16;
+                   ICRC16;
+                 };
+ };
+type EventNotification = 
+ record {
+   data: ICRC16__1;
+   eventId: nat;
+   filter: opt text;
+   headers: opt ICRC16Map__1;
+   id: nat;
+   namespace: text;
+   prevEventId: opt nat;
+   source: principal;
+   timestamp: nat;
+ };
+type EmitableEvent = 
+ record {
+   broadcaster: principal;
+   data: ICRC16;
+   headers: opt ICRC16Map;
+   id: nat;
+   namespace: text;
+   prevId: opt nat;
+   source: principal;
+   timestamp: nat;
+ };
+type Args = opt ArgList;
+type ArgList = 
+ record {
+   expectedExecutionTime: Time;
+   initialTimers: vec record {
+                        ActionId;
+                        Action;
+                      };
+   lastActionIdReported: opt nat;
+   lastCycleReport: opt nat;
+   lastExecutionTime: Time;
+   maxExecutions: opt nat;
+   nextActionId: nat;
+   nextCycleActionId: opt nat;
+ };
+type ActionId = 
+ record {
+   id: nat;
+   time: Time;
+ };
+type Action = 
+ record {
+   aSync: opt nat;
+   actionType: text;
+   params: blob;
+   retries: nat;
+ };
+service : (opt
+            record {
+              icrc72PublisherArgs: opt InitArgs;
+              icrc72SubscriberArgs: opt InitArgs__1;
+              ttArgs: opt Args;
+            }) -> MVEvent

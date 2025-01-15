@@ -1,9 +1,33 @@
 {
   "canisters": {
-    
     "example": {
       "main": "src/canister.mo",
       "type": "motoko"
+    },
+    "orchestrator": {
+      "main": "src/orchestrator.mo",
+      "type": "motoko",
+      "gzip": true
+    },
+    "orchestratorMock": {
+      "main": "src/orchestratorMock.mo",
+      "type": "motoko",
+      "gzip": true
+    },
+    "subscriber": {
+      "main": "src/subscriber.mo",
+      "type": "motoko",
+      "gzip": true
+    },
+    "broadcaster": {
+      "main": "src/broadcaster.mo",
+      "type": "motoko",
+      "gzip": true
+    },
+    "publisher": {
+      "main": "src/publisher.mo",
+      "type": "motoko",
+      "gzip": true
     },
     "remote": {
       "main": "src/remote.mo",

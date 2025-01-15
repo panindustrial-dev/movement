@@ -6,6 +6,9 @@ import ICRC72SubscriberService "../../icrc72-subscriber.mo/src/service";
 import ICRC72BroadcasterService "../../icrc72-broadcaster.mo/src/service";
 
 
+import ClassPlus "../../../../ICDevs/projects/ClassPlus/src/";
+
+
 import D "mo:base/Debug";
 import Principal "mo:base/Principal";
 import Timer "mo:base/Timer";
@@ -46,7 +49,7 @@ shared (deployer) actor class MVEvent<system>(args: ?{
       filter = "icrc72:subscription:filter";
       filter_update = "icrc72:subscription:filter:update";
       filter_remove = "icrc72:subscription:filter:remove";
-      bActive = "icrc72:subscription:bActive";
+      stopped = "icrc72:subscription:stopped";
       skip = "icrc72:subscription:skip";
       skip_update = "icrc72:subscription:skip:update";
       skip_remove = "icrc72:subscription:skip:remove";
@@ -150,6 +153,8 @@ shared (deployer) actor class MVEvent<system>(args: ?{
   stable var _owner = deployer.caller;
 
   //get args
+  let initManager = ClassPlus.ClassPlusInitializationManager(_owner, Principal.fromActor(this), true);
+
   let icrc72PublisherInitArgs : ?ICRC72Publisher.InitArgs = switch(args){
     case(null) icrc72PublisherDefaultArgs;
     case(?args){
@@ -159,6 +164,8 @@ shared (deployer) actor class MVEvent<system>(args: ?{
       };
     };
   };
+
+
 
   let icrc72SubscriberInitArgs : ?ICRC72Subscriber.InitArgs = switch(args){
     case(null) icrc72SubscriberDefaultArgs;
@@ -170,7 +177,6 @@ shared (deployer) actor class MVEvent<system>(args: ?{
     };
   };
 
- 
   let ttInitArgs : TT.Args = switch(args){
     case(null) ttDefaultArgs;
     case(?args){
@@ -182,112 +188,108 @@ shared (deployer) actor class MVEvent<system>(args: ?{
   };
 
 
-  //stable storage:
-  stable let icrc72SubscriberMigrationState = ICRC72Subscriber.init(ICRC72Subscriber.initialState(), #v0_1_0(#id),icrc72SubscriberInitArgs, _owner);
-  stable let icrc72PublisherMigrationState = ICRC72Publisher.init(ICRC72Publisher.initialState(), #v0_1_0(#id),icrc72PublisherInitArgs, _owner);
-  
+  private func reportTTExecution(execInfo: TT.ExecutionReport): Bool{
+    debug if(debug_channel.timerTool) D.print("CANISTER: TimerTool Execution: " # debug_show(execInfo));
+    return false;
+  };
 
-  stable let timerState = TT.init(TT.initialState(),#v0_1_0(#id), ttInitArgs, deployer.caller);
+  private func reportTTError(errInfo: TT.ErrorReport) : ?Nat{
+    debug if(debug_channel.timerTool) D.print("CANISTER: TimerTool Error: " # debug_show(errInfo));
+    return null;
+  };
 
-  let #v0_1_0(#data(icrc72SubscriberCurrentState)) = icrc72SubscriberMigrationState;
-  let #v0_1_0(#data(icrc72PublisherCurrentState)) = icrc72PublisherMigrationState;
-  
+  stable var tt_migration_state: TT.State = TT.Migration.migration.initialState;
 
-  private var _icrc72Subscriber : ?ICRC72Subscriber.Subscriber = null;
-  private var _icrc72Publisher : ?ICRC72Publisher.Publisher = null;
+  let thisCanister = Principal.fromActor(this);
 
-  var _timerTool : ?TT.TimerTool = null;
-
-  private func tt<system>() : TT.TimerTool{
-    switch(_timerTool){
-      case(null){
-        let x = TT.TimerTool(?timerState, getCanister(), getTTEnvironment());
-        x.initialize<system>();
-        _timerTool := ?x;
-        x;
+  let tt  = TT.Init<system>({
+    manager = initManager;
+    initialState = tt_migration_state;
+    args = null;
+    pullEnvironment = ?(func() : TT.Environment {
+      {      
+        advanced = null;
+        reportExecution = ?reportTTExecution;
+        reportError = ?reportTTError;
+        syncUnsafe = null;
+        reportBatch = null;
       };
-      case(?val) val;
-    };
+    });
+
+    onInitialize = ?(func (newClass: TT.TimerTool) : async* () {
+      D.print("Initializing TimerTool");
+      newClass.initialize<system>();
+      //do any work here necessary for initialization
+    });
+    onStorageChange = func(state: TT.State) {
+      tt_migration_state := state;
+    }
+  });
+
+  private func getOrchestrator() : Principal {
+    return Principal.fromText("bkyz2-fmaaa-aaaaa-qaaaq-cai");
   };
 
-  private func getTTEnvironment() : TT.Environment{
-    {      
-      advanced = null;
-      reportExecution = ?reportTTExecution;
-      reportError = ?reporTTError;
-      syncUnsafe = null;
-      reportBatch = null;
-    };
-  };
+  stable var icrc72SubscriberMigrationState : ICRC72Subscriber.State = ICRC72Subscriber.Migration.migration.initialState;
 
-  
-  private func getICRC72SubscriberEnv<system>() : ICRC72Subscriber.Environment {
-    debug if(debug_channel.announce) D.print("REMOTE: Getting ICRC72Subscriber Environment");
+  let icrc72_subscriber = ICRC72Subscriber.Init<system>({
+      manager = initManager;
+      initialState = icrc72SubscriberMigrationState;
+      args = icrc72SubscriberInitArgs;
+      pullEnvironment = ?(func() : ICRC72Subscriber.Environment{
+        {      
+          addRecord = null;
+          generateId = null;
+          icrc72OrchestratorCanister = getOrchestrator();
+          tt = tt();
+          handleEventOrder = null;
+          handleNotificationError = null;
+        };
+      });
+
+      onInitialize = ?(func (newClass: ICRC72Subscriber.Subscriber) : async* () {
+        D.print("Initializing Subscriber");
+        ignore Timer.setTimer<system>(#nanoseconds(0), newClass.initializeSubscriptions);
+        //do any work here necessary for initialization
+      });
+      onStorageChange = func(state: ICRC72Subscriber.State) {
+        icrc72SubscriberMigrationState := state;
+      }
+    });
+
+
+  stable var icrc72PublisherMigrationState : ICRC72Publisher.State = ICRC72Publisher.Migration.migration.initialState;
+
+  let icrc72_publisher = ICRC72Publisher.Init<system>(
     {
-      addRecord = null;
-      generateId = null;
-      icrc72OrchestratorCanister = getOrchestrator();
-      tt = tt();
-      handleEventOrder = null;
-      handleNotificationError = null;
-    };
-  };
+      manager = initManager;
+      initialState = icrc72PublisherMigrationState;
+      args = icrc72PublisherInitArgs;
+      pullEnvironment = ?(func() : ICRC72Publisher.Environment{
+        {      
+          addRecord = null;
+          generateId = null;
+          icrc72Subscriber = icrc72_subscriber();
+          icrc72OrchestratorCanister = getOrchestrator();
+          onEventPublishError = null;
+          onEventPublished = null;
+          tt = tt();
+        };
+      });
 
-  private func getICRC72PublisherEnv<system>() : ICRC72Publisher.Environment {
-    debug if(debug_channel.announce) D.print("REMOTE: Getting ICRC72Publisher Environment");
-    {
-      addRecord = null;
-      generateId = null;
-      icrc72Subscriber = icrc72Subscriber<system>();
-      icrc72OrchestratorCanister = getOrchestrator();
-      tt = tt<system>();
-    };
-  };
-
-  
-
-  func icrc72Subscriber<system>() : ICRC72Subscriber.Subscriber {
-    switch(_icrc72Subscriber){
-      case(null){
-        debug if(debug_channel.announce) D.print("REMOTE: Initing Subscriber");
-        let initclass : ICRC72Subscriber.Subscriber = ICRC72Subscriber.Subscriber(?icrc72SubscriberMigrationState, Principal.fromActor(this), getICRC72SubscriberEnv<system>());
-        _icrc72Subscriber := ?initclass;
-        ignore Timer.setTimer<system>(#nanoseconds(0), initclass.initSubscriber);
-        initclass;
-      };
-      case(?val) val;
-    };
-  };
-
- 
-
-  func icrc72Publisher<system>() : ICRC72Publisher.Publisher {
-    switch(_icrc72Publisher){
-      case(null){
-        debug if(debug_channel.announce) D.print("REMOTE: Initing Publisher");
-        let initclass : ICRC72Publisher.Publisher = ICRC72Publisher.Publisher(?icrc72PublisherMigrationState, Principal.fromActor(this), getICRC72PublisherEnv<system>());
-        _icrc72Publisher := ?initclass;
-        ignore Timer.setTimer<system>(#nanoseconds(0), initclass.initPublisher);
-        initclass;
-      };
-      case(?val) val;
-    };
-  };
+      onInitialize = ?(func (newClass: ICRC72Publisher.Publisher) : async* () {
+        D.print("Initializing Publisher");
+        ignore Timer.setTimer<system>(#nanoseconds(0), newClass.initializeSubscriptions);
+        //do any work here necessary for initialization
+      });
+      onStorageChange = func(state: ICRC72Publisher.State) {
+        icrc72PublisherMigrationState := state;
+      }
+    }); 
 
   
 
   
-
-
-  func q_icrc720Subscriber() : ICRC72Subscriber.Subscriber {
-   let ?found = _icrc72Subscriber else D.trap("Subscriber not initialized");
-   found;
-  };
-
-  func q_icrc720Publisher() : ICRC72Publisher.Publisher {
-   let ?found = _icrc72Publisher else D.trap("Publisher not initialized");
-   found;
-  };
 
   var canisterId_ : ?Principal = null;
 
@@ -302,19 +304,7 @@ shared (deployer) actor class MVEvent<system>(args: ?{
     };
   };
 
-  private func getOrchestrator() : Principal {
-    return Principal.fromText("bkyz2-fmaaa-aaaaa-qaaaq-cai");
-  };
-
-  private func reportTTExecution(execInfo: TT.ExecutionReport): Bool{
-    debug if(debug_channel.timerTool) D.print("REMOTE: TimerTool Execution: " # debug_show(execInfo));
-    return false;
-  };
-
-  private func reporTTError(errInfo: TT.ErrorReport) : ?Nat{
-    debug if(debug_channel.timerTool) D.print("REMOTE: TimerTool Error: " # debug_show(errInfo));
-    return null;
-  };
+  
 
   public shared func hello() : async Text {
     return "Hello, World!";
@@ -322,12 +312,12 @@ shared (deployer) actor class MVEvent<system>(args: ?{
 
   public shared(msg) func icrc72_handle_notification(items : [ICRC72SubscriberService.EventNotification]) : () {
     debug if(debug_channel.announce) D.print("REMOTE: Received notification: " # debug_show(items));
-    return await* icrc72Subscriber<system>().icrc72_handle_notification(msg.caller, items);
+    return await* icrc72_subscriber().icrc72_handle_notification(msg.caller, items);
   };
 
   public shared(msg) func send(amount : Nat) : async [?Nat] {
     debug if(debug_channel.announce) D.print("REMOTE: sending: " # debug_show((amount)));
-    let result = icrc72Publisher<system>().publish<system>([{
+    let result = icrc72_publisher().publish<system>([{
       namespace = "counter";
       data = #Map([("amount", #Nat(amount))]);
       headers = null;
@@ -351,19 +341,13 @@ shared (deployer) actor class MVEvent<system>(args: ?{
       D.trap("Only the canister can initialize the canister");
     };
     debug if(debug_channel.init) D.print("REMOTE: ---------Initializing Canister---------");
-    debug if(debug_channel.init) D.print("REMOTE: ---------Initializing tt---------");
-    ignore tt<system>();
-
-    debug if(debug_channel.init) D.print("REMOTE: ---------Initializing Publisher---------");
-    ignore icrc72Publisher<system>();
-    debug if(debug_channel.init) D.print("REMOTE: ---------Initializing Subscriber---------");
-    ignore icrc72Subscriber<system>();
+    
 
 
     ignore Timer.setTimer<system>(#nanoseconds(0 * 10), func () : async() {
       //declare a pulication of counter
       //todo: default for empty lists
-      ignore await* icrc72Publisher<system>().registerPublications([
+      ignore await* icrc72_publisher().registerPublications([
         {
           namespace = "counter";
           config = [
@@ -385,7 +369,7 @@ shared (deployer) actor class MVEvent<system>(args: ?{
       ]);
       ignore Timer.setTimer<system>(#nanoseconds(0 * 10), func () : async() {
       //declare a subscription of counter
-        ignore await* icrc72Subscriber<system>().subscribe([{
+        ignore await* icrc72_subscriber().subscribe([{
           namespace = "counter"; 
           config = [];
           memo = null;

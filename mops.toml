@@ -8,9 +8,9 @@ map = "9.0.1"
 vector = "0.4.0"
 candy = "0.3.0"
 icrc1-mo = "0.0.15"
-ovs-fixed = "0.1.1"
+ovs-fixed = "0.1.2"
 candy-utils = "0.7.0"
-timer-tool = "0.0.2"
+timer-tool = "0.1.0"
 
 [package]
 name = "mvevent"
