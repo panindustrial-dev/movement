@@ -62,7 +62,19 @@ export interface EventNotificationRecordShared {
   'eventId' : bigint,
   'destination' : Principal,
   'headers' : [] | [ICRC16Map__3],
-  'stake' : bigint,
+  'stake' : StakeRecord,
+  'filter' : [] | [string],
+  'bSent' : [] | [bigint],
+  'timerId' : [] | [bigint],
+  'publication' : string,
+}
+export interface EventNotificationRecordShared__1 {
+  'id' : bigint,
+  'bConfirmed' : [] | [bigint],
+  'eventId' : bigint,
+  'destination' : Principal,
+  'headers' : [] | [ICRC16Map__3],
+  'stake' : StakeRecord,
   'filter' : [] | [string],
   'bSent' : [] | [bigint],
   'timerId' : [] | [bigint],
@@ -91,6 +103,12 @@ export interface EventNotification__2 {
   'namespace' : string,
 }
 export interface EventRecordShared {
+  'relayQueue' : Array<Principal>,
+  'notifications' : Array<bigint>,
+  'notificationQueue' : Array<bigint>,
+  'event' : Event__1,
+}
+export interface EventRecordShared__1 {
   'relayQueue' : Array<Principal>,
   'notifications' : Array<bigint>,
   'notificationQueue' : Array<bigint>,
@@ -268,6 +286,10 @@ export interface InitArgs__1 {
 }
 export interface InitArgs__2 { 'name' : string }
 export interface MVEvent {
+  'getHandledNotifications' : ActorMethod<
+    [],
+    Array<[EventNotificationRecordShared__1, EventRecordShared__1]>
+  >,
   'get_stats' : ActorMethod<[], Stats>,
   'get_subnet_for_canister' : ActorMethod<
     [],
@@ -284,6 +306,7 @@ export interface MVEvent {
     undefined
   >,
   'icrc72_publish' : ActorMethod<[Array<Event>], Array<[] | [PublishResult]>>,
+  'initialize' : ActorMethod<[], undefined>,
   'simulatePublish' : ActorMethod<
     [bigint, string, bigint, Principal],
     Array<[] | [PublishResult]>
@@ -317,7 +340,7 @@ export interface PublicationRecordShared {
   'subnetIndex' : Array<[Principal, Principal]>,
   'registeredPublishers' : Array<Principal>,
   'registeredSubscribers' : Array<[Principal, SubscriberRecordShared]>,
-  'stakeIndex' : Array<[bigint, Array<[bigint, Principal]>]>,
+  'stakeIndex' : Array<[StakeRecord, Principal]>,
   'registeredRelay' : Array<[Principal, [] | [Array<string>]]>,
   'namespace' : string,
 }
@@ -326,6 +349,11 @@ export type PublishError = { 'GenericError' : GenericError } |
   { 'Unauthorized' : null };
 export type PublishResult = { 'Ok' : Array<bigint> } |
   { 'Err' : PublishError };
+export interface StakeRecord {
+  'principal' : [] | [Principal],
+  'stake' : bigint,
+  'timestamp' : bigint,
+}
 export interface Stats {
   'tt' : Stats__3,
   'eventStore' : Array<[string, Array<[bigint, EventRecordShared]>]>,
@@ -348,6 +376,7 @@ export interface Stats {
 }
 export interface Stats__1 {
   'tt' : Stats__3,
+  'icrc72Subscriber' : Stats__2,
   'error' : [] | [string],
   'orchestrator' : Principal,
   'readyForPublications' : boolean,
@@ -357,7 +386,7 @@ export interface Stats__1 {
   'broadcasters' : Array<[string, Array<Principal>]>,
   'publications' : Array<[bigint, PublicationRecord]>,
   'drainEventId' : [] | [ActionId__1],
-  'subscriber' : Stats__2,
+  'icrc72OrchestratorCanister' : Principal,
 }
 export interface Stats__2 {
   'tt' : Stats__3,
@@ -400,7 +429,7 @@ export interface SubscriptionRecord {
 export interface SubscriptionRecordShared {
   'id' : bigint,
   'skip' : [] | [[bigint, bigint]],
-  'stake' : bigint,
+  'stake' : StakeRecord,
   'filter' : [] | [string],
   'config' : ICRC16Map__3,
   'namespace' : string,

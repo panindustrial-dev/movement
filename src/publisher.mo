@@ -307,6 +307,19 @@ shared (deployer) actor class Publisher<system>(args: ?{
     return await* icrc72_publisher().updatePublication(updates);
   };
 
+
+  public shared(msg) func simulatePublicationCreation() : async [ICRC72OrchestratorService.PublicationRegisterResult] {
+    let service : ICRC72OrchestratorService.Service = actor(Principal.toText(orchestratorPrincipal));
+    return await service.icrc72_register_publication([{
+      namespace = "com.test.counter";
+      config = [
+        (ICRC72OrchestratorService.CONST.publication.publishers.allowed.list, #Array([#Blob(Principal.toBlob(thisPrincipal))])),
+        (ICRC72OrchestratorService.CONST.publication.controllers.list, #Array([#Blob(Principal.toBlob(thisPrincipal))]))
+      ];
+      memo = null;
+    }]);
+  };
+
   
 
 

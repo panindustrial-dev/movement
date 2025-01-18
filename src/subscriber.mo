@@ -272,6 +272,24 @@ shared (deployer) actor class Subscriber<system>(args: ?{
     _registerExecutionListenerCalledAsync += 1;
   };
 
+  var counter : Nat = 0;
+
+  func processCounterEvent<system>(event: ICRC72Subscriber.EventNotification) : (){
+    debug if(debug_channel.announce) D.print("CANISTER: Received notification: " # debug_show(event));
+    
+    counter += 1;
+  };
+
+  func processCounterEventAsync<system>(event: ICRC72Subscriber.EventNotification) : async* (){
+    debug if(debug_channel.announce) D.print("CANISTER: Received notification: " # debug_show(event));
+    
+    counter += 1;
+  };
+
+  public query(msg) func getCounter() : async Nat {
+    return counter;
+  };
+
   public shared(msg) func registerExecutionListenerSync(config : ?ICRC72Subscriber.ICRC16Map) : async [ICRC72OrchestratorService.SubscriptionRegisterResult] {
      return await* icrc72_subscriber().subscribe([{
       namespace = "syncListenerNamespace";
@@ -294,6 +312,30 @@ shared (deployer) actor class Subscriber<system>(args: ?{
       memo = null;
       listener = #Async(syncListenerNamespaceHandlerAsync);
     }]);
+  };
+
+  public shared(msg) func simulateSubscriptionCreation(sync: Bool, namespace: Text, config : ?ICRC72Subscriber.ICRC16Map) : async [ICRC72OrchestratorService.SubscriptionRegisterResult] {
+    if(sync){
+      return await* icrc72_subscriber().subscribe([{
+        namespace = namespace;
+        config = switch(config){
+          case(?val) val;
+          case(null) [];
+        };
+        memo = null;
+        listener = #Sync(processCounterEvent);
+      }]);
+    } else {
+      return await* icrc72_subscriber().subscribe([{
+        namespace = namespace;
+        config = switch(config){
+          case(?val) val;
+          case(null) [];
+        };
+        memo = null;
+        listener = #Async(processCounterEventAsync);
+      }]);
+    }
   };
 
 

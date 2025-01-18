@@ -29,13 +29,13 @@ export interface BroadcasterRecordShared {
       string,
       [
         Array<[Principal, Array<Principal>]>,
-        Array<[bigint, [Principal, Principal]]>,
+        Array<[StakeRecord, [Principal, Principal]]>,
       ],
     ]
   >,
   'publishers' : Array<[Principal, Array<string>]>,
   'subscribers' : Array<
-    [string, [Array<Principal>, Array<[bigint, Principal]>]]
+    [string, [Array<Principal>, Array<[StakeRecord, Principal]>]]
   >,
   'subnet' : Principal,
 }
@@ -238,13 +238,24 @@ export interface InitArgs__1 {
 }
 export interface InitArgs__2 { 'name' : string }
 export interface MVEvent {
+  'broadcaster_ready' : ActorMethod<[], undefined>,
+  'file_subnet_broadcaster' : ActorMethod<[Principal], undefined>,
+  'file_subnet_canister' : ActorMethod<[Principal, Principal], undefined>,
   'get_stats' : ActorMethod<[], Stats__1>,
   'get_subnet_for_canister' : ActorMethod<
-    [],
+    [{ 'principal' : [] | [Principal] }],
     { 'Ok' : { 'subnet_id' : [] | [Principal] } } |
       { 'Err' : string }
   >,
   'hello' : ActorMethod<[], string>,
+  'icrc72_delete_publication' : ActorMethod<
+    [Array<PublicationDeleteRequest>],
+    Array<PublicationDeleteResult>
+  >,
+  'icrc72_delete_subscription' : ActorMethod<
+    [Array<SubscriptionDeleteRequest>],
+    Array<SubscriptionDeleteResult>
+  >,
   'icrc72_get_broadcasters' : ActorMethod<
     [
       {
@@ -339,6 +350,18 @@ export type PermissionSetShared = {
     'allowed_icrc75' : { 'principal' : Principal, 'namespace' : Namespace__2 }
   } |
   { 'disallowed' : Array<Principal> };
+export type PublicationDeleteError = { 'GenericError' : GenericError } |
+  { 'NotFound' : null } |
+  { 'Unauthorized' : null } |
+  { 'GenericBatchError' : string };
+export interface PublicationDeleteRequest {
+  'memo' : [] | [Uint8Array | number[]],
+  'publication' : PublicationIdentifier,
+}
+export type PublicationDeleteResult = [] | [
+  { 'Ok' : boolean } |
+    { 'Err' : PublicationDeleteError }
+];
 export type PublicationIdentifier = { 'publicationId' : bigint } |
   { 'namespace' : string };
 export interface PublicationInfo {
@@ -392,6 +415,11 @@ export interface PublisherRecordShared {
   'broadcasters' : Array<Principal>,
   'subnet' : [] | [Principal],
 }
+export interface StakeRecord {
+  'principal' : [] | [Principal],
+  'stake' : bigint,
+  'timestamp' : bigint,
+}
 export type StatisticsFilter = [] | [[] | [Array<string>]];
 export type Stats = Array<[string, ICRC16__1]>;
 export interface Stats__1 {
@@ -401,6 +429,7 @@ export interface Stats__1 {
   'defaultTake' : bigint,
   'nextSubscriptionID' : bigint,
   'broadcasters' : Array<[Principal, BroadcasterRecordShared]>,
+  'subnet' : [] | [Principal],
   'publications' : Array<[bigint, PublicationRecordShared]>,
   'nextPublicationID' : bigint,
   'maxTake' : bigint,
@@ -453,12 +482,27 @@ export interface SubscriberRecordShared {
   'registeredBroadcasters' : Array<Principal>,
   'skip' : [] | [[bigint, bigint]],
   'subscriptionId' : bigint,
-  'stake' : bigint,
+  'stake' : StakeRecord,
   'filter' : [] | [string],
   'subnet' : [] | [Principal],
   'subscriber' : Principal,
   'bStopped' : boolean,
 }
+export type SubscriptionDeleteError = { 'GenericError' : GenericError } |
+  { 'NotFound' : null } |
+  { 'Unauthorized' : null } |
+  { 'GenericBatchError' : string };
+export interface SubscriptionDeleteRequest {
+  'subscription' : SubscriptionIdentifier,
+  'memo' : [] | [Uint8Array | number[]],
+  'subscriber' : [] | [Principal],
+}
+export type SubscriptionDeleteResult = [] | [
+  { 'Ok' : boolean } |
+    { 'Err' : SubscriptionDeleteError }
+];
+export type SubscriptionIdentifier = { 'subscriptionId' : bigint } |
+  { 'namespace' : string };
 export interface SubscriptionInfo {
   'subscriptionId' : bigint,
   'stats' : Stats,
@@ -473,7 +517,7 @@ export interface SubscriptionRecord {
 export interface SubscriptionRecordShared {
   'id' : bigint,
   'controllers' : Array<Principal>,
-  'stake' : bigint,
+  'stake' : StakeRecord,
   'publicationId' : bigint,
   'initialConfig' : ICRC16Map__4,
   'subscribers' : Array<[Principal, SubscriberRecordShared]>,

@@ -17,6 +17,7 @@ import Timer "mo:base/Timer";
 import Nat "mo:base/Nat";
 import Int "mo:base/Int";
 import Time "mo:base/Time";
+import Buffer "mo:base/Buffer";
 
 
 shared (deployer) actor class MVEvent<system>(args: ?{
@@ -44,6 +45,12 @@ shared (deployer) actor class MVEvent<system>(args: ?{
     };
     case(null) thisPrincipal;
   }; 
+
+  type ReadyService = actor {
+    broadcaster_ready: () -> async ()
+  }; 
+
+  let readyService : ReadyService = actor(Principal.toText(orchestratorPrincipal));
 
   //default args
 
@@ -126,7 +133,7 @@ shared (deployer) actor class MVEvent<system>(args: ?{
 
     onInitialize = ?(func (newClass: TT.TimerTool) : async* () {
       D.print("Initializing TimerTool");
-      newClass.initialize<system>();
+      
       //do any work here necessary for initialization
     });
     onStorageChange = func(state: TT.State) {
@@ -153,7 +160,7 @@ shared (deployer) actor class MVEvent<system>(args: ?{
 
       onInitialize = ?(func (newClass: ICRC72Subscriber.Subscriber) : async* () {
         D.print("Initializing Subscriber");
-        ignore Timer.setTimer<system>(#nanoseconds(0), newClass.initializeSubscriptions);
+        //ignore Timer.setTimer<system>(#nanoseconds(0), newClass.initializeSubscriptions);
         //do any work here necessary for initialization
       });
       onStorageChange = func(state: ICRC72Subscriber.State) {
@@ -183,7 +190,7 @@ shared (deployer) actor class MVEvent<system>(args: ?{
 
       onInitialize = ?(func (newClass: ICRC72Publisher.Publisher) : async* () {
         D.print("Initializing Publisher");
-        ignore Timer.setTimer<system>(#nanoseconds(0), newClass.initializeSubscriptions);
+        
         //do any work here necessary for initialization
       });
       onStorageChange = func(state: ICRC72Publisher.State) {
@@ -193,6 +200,13 @@ shared (deployer) actor class MVEvent<system>(args: ?{
 
   //stable storage:
   stable var icrc72BroadcasterMigrationState : ICRC72Broadcaster.State = ICRC72Broadcaster.Migration.migration.initialState;
+
+  let handledNotifications = Buffer.Buffer<(ICRC72Broadcaster.EventNotificationRecordShared, ICRC72Broadcaster.EventRecordShared)>(1);
+
+  private func handleEventNotification<system>(state: ICRC72Broadcaster.CurrentState, env: ICRC72Broadcaster.Environment, notification: ICRC72Broadcaster.EventNotificationRecord, event: ICRC72Broadcaster.EventRecord) : Bool{
+    handledNotifications.add((ICRC72Broadcaster.eventNotificationRecordToShared(notification), ICRC72Broadcaster.eventRecordToShared(event)));
+    return true;
+  };
 
   let icrc72_broadcaster = ICRC72Broadcaster.Init<system>({
       manager = initManager;
@@ -208,7 +222,7 @@ shared (deployer) actor class MVEvent<system>(args: ?{
           subscriptionSearch = null;
           subscriptionFilter = null;
           publishReturnFunction = null;
-          handleConfirmation = null;
+          handleConfirmation = ?handleEventNotification;
           handleEventFinalized = null;
           handleBroadcasterListening = null; //State, Environment, Namespace, Principal, Listening = True; Resigning = False
           handleBroadcasterPublishing = null; //State, Environment, Namespace, Principal, Listening = True; Resigning = False
@@ -221,7 +235,7 @@ shared (deployer) actor class MVEvent<system>(args: ?{
       onInitialize = ?(func (newClass: ICRC72Broadcaster.Broadcaster) : async* () {
         D.print("Initializing Broadcaster");
 
-       ignore Timer.setTimer<system>(#nanoseconds(0), newClass.initializeSubscriptions);
+       
         //do any work here necessary for initialization
       });
       onStorageChange = func(state: ICRC72Broadcaster.State) {
@@ -231,6 +245,13 @@ shared (deployer) actor class MVEvent<system>(args: ?{
 
   public shared func hello() : async Text {
     return "Hello, World!";
+  };
+
+
+  
+
+  public query(msg) func getHandledNotifications() : async [(ICRC72Broadcaster.EventNotificationRecordShared, ICRC72Broadcaster.EventRecordShared)] {
+    return Buffer.toArray(handledNotifications);
   };
 
   public shared(msg) func icrc72_handle_notification(items : [ICRC72SubscriberService.EventNotification]) : () {
@@ -259,6 +280,7 @@ shared (deployer) actor class MVEvent<system>(args: ?{
   public query(msg) func get_stats() : async ICRC72Broadcaster.Stats {
     return icrc72_broadcaster().stats();
   };
+
   public shared func simulatePublisherAssignment(namespace: Text, id: Nat, principal: Principal) : async () {
     await* icrc72_subscriber().icrc72_handle_notification(
       icrc72_broadcaster().environment.icrc72OrchestratorCanister, [
@@ -433,6 +455,15 @@ shared (deployer) actor class MVEvent<system>(args: ?{
           data = #Map([("data", #Nat(data))])
         }
       ]);
+  };
+
+  public shared func initialize() : async (){
+    tt().initialize<system>();
+    await icrc72_broadcaster().initializeSubscriptions();
+    await icrc72_subscriber().initializeSubscriptions();
+    await icrc72_publisher().initializeSubscriptions();
+    await readyService.broadcaster_ready();
+    return;
   };
 
 

@@ -108,6 +108,7 @@ type Publisher =
    simulateBroadcastRemoval: (text, principal) -> () oneway;
    simulateBroadcastRemovalEvent: (text, principal) -> () oneway;
    simulateDeletePublication: (text) -> (PublicationDeleteResult);
+   simulatePublicationCreation: () -> (vec PublicationRegisterResult);
    simulatePublish: (vec NewEvent) -> (vec opt nat);
    simulatePublishAsync: (vec NewEvent) -> (vec opt nat);
    simulatePublishWithHandler: (vec NewEvent) -> (vec opt nat);

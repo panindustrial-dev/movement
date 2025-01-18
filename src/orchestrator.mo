@@ -205,7 +205,7 @@ shared (deployer) actor class MVEvent<system>(args: ?{
         D.print("Initializing Orchestrator");
         //todo: find a way to distinguish between localy running DFX and deployed to the IC.
         newClass.governance :=  actor(Principal.toText(Principal.fromActor(this)));
-        ignore await* newClass.fileBroadcaster(Principal.fromActor(this));
+        
         //do any work here necessary for initialization
       });
       onStorageChange = func(state: ICRC72Orchestrator.State) {
@@ -213,7 +213,30 @@ shared (deployer) actor class MVEvent<system>(args: ?{
       }
     });
 
+  let broadcasterSet = ICRC72Orchestrator.Set.new<Principal>();
 
+  public shared(msg) func file_subnet_broadcaster(principal: Principal) : async () {
+    ignore ICRC72Orchestrator.Set.put(broadcasterSet, ICRC72Orchestrator.Set.phash, principal);
+  };
+
+  public shared(msg) func broadcaster_ready() : async () {
+    switch(ICRC72Orchestrator.Set.has(broadcasterSet, ICRC72Orchestrator.Set.phash, msg.caller)){
+      case(true) {
+          ignore await* icrc72_orchestrator().fileBroadcaster(msg.caller);
+          return;
+      };
+      case(false) {
+        debug if(debug_channel.announce) D.print("CANISTER: Broadcaster not found: " # debug_show(msg.caller));
+        return;
+      };
+    };
+  };
+
+  let subMap = ICRC72Orchestrator.Map.new<Principal, Principal>();
+
+  public shared(msg) func file_subnet_canister(subnet: Principal, can: Principal) : async () {
+    ignore ICRC72Orchestrator.Map.put(subMap, ICRC72Orchestrator.Map.phash, can, subnet);
+  };
 
   public shared func hello() : async Text {
     return "Hello, World!";
@@ -229,11 +252,25 @@ shared (deployer) actor class MVEvent<system>(args: ?{
     return await* icrc72_orchestrator().icrc72_register_publication(msg.caller, request);
   };
 
-  public query(msg) func get_subnet_for_canister() : async {
+  public query(msg) func get_subnet_for_canister( request : { principal : ?Principal }) : async {
     #Ok : { subnet_id : ?Principal };
     #Err : Text;
   } {
-    return #Ok({subnet_id = ?Principal.fromActor(this)});
+    debug if(debug_channel.announce) D.print("GOVERNANCE: Get Subnet for Canister: " # debug_show(request));
+
+    let target = switch(request.principal){
+      case(null) msg.caller;
+      case(?val) val;
+    };
+    //debug if(debug_channel.announce) D.print("GOVERNANCE: Get Subnet for Canister: " # debug_show(target));
+
+    //debug if(debug_channel.announce) D.print("GOVERNANCE: Get Subnet for Canister: " # debug_show(ICRC72Orchestrator.Map.toArray(subMap)));
+
+
+    switch( ICRC72Orchestrator.Map.get(subMap, ICRC72Orchestrator.Map.phash, target)){
+      case(null) return #Err( "Not Found");
+      case(?val) return #Ok({ subnet_id = ?val });
+    }
   };
 
   public shared(msg) func icrc72_update_publication(request : [ICRC72OrchestratorService.PublicationUpdateRequest]) : async [ICRC72OrchestratorService.PublicationUpdateResult] {
@@ -303,6 +340,17 @@ shared (deployer) actor class MVEvent<system>(args: ?{
 
   public query func get_stats() : async ICRC72Orchestrator.Stats {
     return icrc72_orchestrator().stats();
+  };
+
+  public shared(msg) func icrc72_delete_publication(request: [ICRC72OrchestratorService.PublicationDeleteRequest]) : async [ICRC72OrchestratorService.PublicationDeleteResult] {
+    debug if(debug_channel.announce) D.print("CANISTER: Delete Publication: " # debug_show(request));
+    
+    return await* icrc72_orchestrator().icrc72_delete_publication(msg.caller, request);
+  };
+
+  public shared(msg) func icrc72_delete_subscription(request: [ICRC72OrchestratorService.SubscriptionDeleteRequest]) : async [ICRC72OrchestratorService.SubscriptionDeleteResult] {
+    debug if(debug_channel.announce) D.print("CANISTER: Delete Publication: " # debug_show(request));
+    return await* icrc72_orchestrator().icrc72_delete_subscription(msg.caller, request);
   };
 
 

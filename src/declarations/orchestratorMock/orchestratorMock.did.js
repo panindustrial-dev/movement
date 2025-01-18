@@ -276,7 +276,7 @@ export const idlFactory = ({ IDL }) => {
   const SubscriptionUpdateResult = IDL.Opt(
     IDL.Variant({ 'Ok' : IDL.Bool, 'Err' : SubscriptionUpdateError })
   );
-  const MVEvent = IDL.Service({
+  const OrchestratorMock = IDL.Service({
     'getConfirmNotices' : IDL.Func([], [IDL.Vec(IDL.Vec(IDL.Nat))], ['query']),
     'getPublicationDeletes' : IDL.Func(
         [],
@@ -411,6 +411,6 @@ export const idlFactory = ({ IDL }) => {
       ),
     'set_scenario' : IDL.Func([IDL.Text], [], ['oneway']),
   });
-  return MVEvent;
+  return OrchestratorMock;
 };
 export const init = ({ IDL }) => { return []; };

@@ -187,6 +187,11 @@ export const idlFactory = ({ IDL }) => {
     'drainEventId' : IDL.Opt(ActionId__1),
     'icrc72OrchestratorCanister' : IDL.Principal,
   });
+  const StakeRecord = IDL.Record({
+    'principal' : IDL.Opt(IDL.Principal),
+    'stake' : IDL.Nat,
+    'timestamp' : IDL.Nat,
+  });
   const ICRC16Property__4 = IDL.Record({
     'value' : ICRC16__4,
     'name' : IDL.Text,
@@ -225,7 +230,7 @@ export const idlFactory = ({ IDL }) => {
     'registeredBroadcasters' : IDL.Vec(IDL.Principal),
     'skip' : IDL.Opt(IDL.Tuple(IDL.Nat, IDL.Nat)),
     'subscriptionId' : IDL.Nat,
-    'stake' : IDL.Nat,
+    'stake' : StakeRecord,
     'filter' : IDL.Opt(IDL.Text),
     'subnet' : IDL.Opt(IDL.Principal),
     'subscriber' : IDL.Principal,
@@ -234,7 +239,7 @@ export const idlFactory = ({ IDL }) => {
   const SubscriptionRecordShared = IDL.Record({
     'id' : IDL.Nat,
     'controllers' : IDL.Vec(IDL.Principal),
-    'stake' : IDL.Nat,
+    'stake' : StakeRecord,
     'publicationId' : IDL.Nat,
     'initialConfig' : ICRC16Map__4,
     'subscribers' : IDL.Vec(IDL.Tuple(IDL.Principal, SubscriberRecordShared)),
@@ -246,7 +251,9 @@ export const idlFactory = ({ IDL }) => {
         IDL.Text,
         IDL.Tuple(
           IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Vec(IDL.Principal))),
-          IDL.Vec(IDL.Tuple(IDL.Nat, IDL.Tuple(IDL.Principal, IDL.Principal))),
+          IDL.Vec(
+            IDL.Tuple(StakeRecord, IDL.Tuple(IDL.Principal, IDL.Principal))
+          ),
         ),
       )
     ),
@@ -256,7 +263,7 @@ export const idlFactory = ({ IDL }) => {
         IDL.Text,
         IDL.Tuple(
           IDL.Vec(IDL.Principal),
-          IDL.Vec(IDL.Tuple(IDL.Nat, IDL.Principal)),
+          IDL.Vec(IDL.Tuple(StakeRecord, IDL.Principal)),
         ),
       )
     ),
@@ -298,10 +305,50 @@ export const idlFactory = ({ IDL }) => {
     'defaultTake' : IDL.Nat,
     'nextSubscriptionID' : IDL.Nat,
     'broadcasters' : IDL.Vec(IDL.Tuple(IDL.Principal, BroadcasterRecordShared)),
+    'subnet' : IDL.Opt(IDL.Principal),
     'publications' : IDL.Vec(IDL.Tuple(IDL.Nat, PublicationRecordShared)),
     'nextPublicationID' : IDL.Nat,
     'maxTake' : IDL.Nat,
   });
+  const PublicationIdentifier = IDL.Variant({
+    'publicationId' : IDL.Nat,
+    'namespace' : IDL.Text,
+  });
+  const PublicationDeleteRequest = IDL.Record({
+    'memo' : IDL.Opt(IDL.Vec(IDL.Nat8)),
+    'publication' : PublicationIdentifier,
+  });
+  const GenericError = IDL.Record({
+    'message' : IDL.Text,
+    'error_code' : IDL.Nat,
+  });
+  const PublicationDeleteError = IDL.Variant({
+    'GenericError' : GenericError,
+    'NotFound' : IDL.Null,
+    'Unauthorized' : IDL.Null,
+    'GenericBatchError' : IDL.Text,
+  });
+  const PublicationDeleteResult = IDL.Opt(
+    IDL.Variant({ 'Ok' : IDL.Bool, 'Err' : PublicationDeleteError })
+  );
+  const SubscriptionIdentifier = IDL.Variant({
+    'subscriptionId' : IDL.Nat,
+    'namespace' : IDL.Text,
+  });
+  const SubscriptionDeleteRequest = IDL.Record({
+    'subscription' : SubscriptionIdentifier,
+    'memo' : IDL.Opt(IDL.Vec(IDL.Nat8)),
+    'subscriber' : IDL.Opt(IDL.Principal),
+  });
+  const SubscriptionDeleteError = IDL.Variant({
+    'GenericError' : GenericError,
+    'NotFound' : IDL.Null,
+    'Unauthorized' : IDL.Null,
+    'GenericBatchError' : IDL.Text,
+  });
+  const SubscriptionDeleteResult = IDL.Opt(
+    IDL.Variant({ 'Ok' : IDL.Bool, 'Err' : SubscriptionDeleteError })
+  );
   const OrchestrationQuerySlice = IDL.Variant({
     'ByBroadcaster' : IDL.Principal,
     'ByPublisher' : IDL.Principal,
@@ -433,10 +480,6 @@ export const idlFactory = ({ IDL }) => {
     'config' : ICRC16Map__1,
     'namespace' : IDL.Text,
   });
-  const GenericError = IDL.Record({
-    'message' : IDL.Text,
-    'error_code' : IDL.Nat,
-  });
   const PublicationRegisterError = IDL.Variant({
     'GenericError' : GenericError,
     'ImproperConfig' : IDL.Text,
@@ -464,10 +507,6 @@ export const idlFactory = ({ IDL }) => {
   const SubscriptionRegisterResult = IDL.Opt(
     IDL.Variant({ 'Ok' : IDL.Nat, 'Err' : SubscriptionRegisterError })
   );
-  const PublicationIdentifier = IDL.Variant({
-    'publicationId' : IDL.Nat,
-    'namespace' : IDL.Text,
-  });
   const PublicationUpdateRequest = IDL.Record({
     'memo' : IDL.Opt(IDL.Vec(IDL.Nat8)),
     'config' : IDL.Tuple(IDL.Text, ICRC16__1),
@@ -500,9 +539,12 @@ export const idlFactory = ({ IDL }) => {
     IDL.Variant({ 'Ok' : IDL.Bool, 'Err' : SubscriptionUpdateError })
   );
   const MVEvent = IDL.Service({
+    'broadcaster_ready' : IDL.Func([], [], []),
+    'file_subnet_broadcaster' : IDL.Func([IDL.Principal], [], []),
+    'file_subnet_canister' : IDL.Func([IDL.Principal, IDL.Principal], [], []),
     'get_stats' : IDL.Func([], [Stats__1], ['query']),
     'get_subnet_for_canister' : IDL.Func(
-        [],
+        [IDL.Record({ 'principal' : IDL.Opt(IDL.Principal) })],
         [
           IDL.Variant({
             'Ok' : IDL.Record({ 'subnet_id' : IDL.Opt(IDL.Principal) }),
@@ -512,6 +554,16 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'hello' : IDL.Func([], [IDL.Text], []),
+    'icrc72_delete_publication' : IDL.Func(
+        [IDL.Vec(PublicationDeleteRequest)],
+        [IDL.Vec(PublicationDeleteResult)],
+        [],
+      ),
+    'icrc72_delete_subscription' : IDL.Func(
+        [IDL.Vec(SubscriptionDeleteRequest)],
+        [IDL.Vec(SubscriptionDeleteResult)],
+        [],
+      ),
     'icrc72_get_broadcasters' : IDL.Func(
         [
           IDL.Record({

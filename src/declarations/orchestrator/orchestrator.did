@@ -58,7 +58,7 @@ type SubscriptionRecordShared =
    initialConfig: ICRC16Map__4;
    namespace: text;
    publicationId: nat;
-   stake: nat;
+   stake: StakeRecord;
    subscribers: vec record {
                       principal;
                       SubscriberRecordShared;
@@ -77,6 +77,29 @@ type SubscriptionInfo =
    stats: Stats;
    subscriptionId: nat;
  };
+type SubscriptionIdentifier = 
+ variant {
+   namespace: text;
+   subscriptionId: nat;
+ };
+type SubscriptionDeleteResult = 
+ opt variant {
+       Err: SubscriptionDeleteError;
+       Ok: bool;
+     };
+type SubscriptionDeleteRequest = 
+ record {
+   memo: opt blob;
+   subscriber: opt principal;
+   subscription: SubscriptionIdentifier;
+ };
+type SubscriptionDeleteError = 
+ variant {
+   GenericBatchError: text;
+   GenericError: GenericError;
+   NotFound;
+   Unauthorized;
+ };
 type SubscriberRecordShared = 
  record {
    bStopped: bool;
@@ -86,7 +109,7 @@ type SubscriberRecordShared =
                nat;
                nat;
              };
-   stake: nat;
+   stake: StakeRecord;
    subnet: opt principal;
    subscriber: principal;
    subscriptionId: nat;
@@ -189,6 +212,7 @@ type Stats__1 =
                        nat;
                        PublicationRecordShared;
                      };
+   subnet: opt principal;
    subscriptions: vec record {
                         nat;
                         SubscriptionRecordShared;
@@ -201,6 +225,12 @@ type Stats =
        ICRC16__1;
      };
 type StatisticsFilter = opt opt vec text;
+type StakeRecord = 
+ record {
+   "principal": opt principal;
+   stake: nat;
+   timestamp: nat;
+ };
 type PublisherRecordShared = 
  record {
    broadcasters: vec principal;
@@ -287,6 +317,23 @@ type PublicationIdentifier =
    namespace: text;
    publicationId: nat;
  };
+type PublicationDeleteResult = 
+ opt variant {
+       Err: PublicationDeleteError;
+       Ok: bool;
+     };
+type PublicationDeleteRequest = 
+ record {
+   memo: opt blob;
+   publication: PublicationIdentifier;
+ };
+type PublicationDeleteError = 
+ variant {
+   GenericBatchError: text;
+   GenericError: GenericError;
+   NotFound;
+   Unauthorized;
+ };
 type PermissionSetShared = 
  variant {
    allowed: vec principal;
@@ -318,13 +365,20 @@ type Namespace__1 = text;
 type Namespace = text;
 type MVEvent = 
  service {
+   broadcaster_ready: () -> ();
+   file_subnet_broadcaster: (principal) -> ();
+   file_subnet_canister: (principal, principal) -> ();
    get_stats: () -> (Stats__1) query;
-   get_subnet_for_canister: () ->
+   get_subnet_for_canister: (record {"principal": opt principal;}) ->
     (variant {
        Err: text;
        Ok: record {subnet_id: opt principal;};
      }) query;
    hello: () -> (text);
+   icrc72_delete_publication: (vec PublicationDeleteRequest) ->
+    (vec PublicationDeleteResult);
+   icrc72_delete_subscription: (vec SubscriptionDeleteRequest) ->
+    (vec SubscriptionDeleteResult);
    icrc72_get_broadcasters:
     (record {
        filter: opt OrchestrationFilter;
@@ -662,7 +716,7 @@ type BroadcasterRecordShared =
                vec principal;
              };
          vec record {
-               nat;
+               StakeRecord;
                record {
                  principal;
                  principal;
@@ -672,16 +726,17 @@ type BroadcasterRecordShared =
      };
    subnet: principal;
    subscribers:
-    vec record {
-          text;
-          record {
-            vec principal;
-            vec record {
-                  nat;
-                  principal;
-                };
-          };
-        };
+    vec
+     record {
+       text;
+       record {
+         vec principal;
+         vec record {
+               StakeRecord;
+               principal;
+             };
+       };
+     };
  };
 type BroadcasterInfo = 
  record {

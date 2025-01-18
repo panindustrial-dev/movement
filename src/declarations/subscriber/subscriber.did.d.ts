@@ -137,8 +137,34 @@ export type ICRC16__2 = { 'Int' : bigint } |
   { 'Class' : Array<ICRC16Property__2> };
 export interface ICRC75Item { 'principal' : Principal, 'namespace' : Namespace }
 export interface InitArgs { 'name' : string }
-export interface MVEvent {
+export type Namespace = string;
+export interface Stats {
+  'tt' : Stats__1,
+  'subscriptions' : Array<[bigint, SubscriptionRecord]>,
+  'readyForSubscription' : boolean,
+  'backlogs' : Array<[bigint, Array<[bigint, EventNotification__1]>]>,
+  'validBroadcasters' : { 'list' : Array<Principal> } |
+    { 'icrc75' : ICRC75Item },
+  'confirmTimer' : [] | [bigint],
+  'error' : [] | [string],
+  'confirmAccumulator' : Array<[Principal, Array<bigint>]>,
+  'broadcasters' : Array<[bigint, Array<Principal>]>,
+  'lastEventId' : Array<[string, Array<[bigint, bigint]>]>,
+  'icrc72OrchestratorCanister' : Principal,
+}
+export interface Stats__1 {
+  'timers' : bigint,
+  'maxExecutions' : bigint,
+  'minAction' : [] | [ActionDetail],
+  'cycles' : bigint,
+  'nextActionId' : bigint,
+  'nextTimer' : [] | [TimerId],
+  'expectedExecutionTime' : [] | [Time],
+  'lastExecutionTime' : Time,
+}
+export interface Subscriber {
   'checkRegisteredExecutionListener' : ActorMethod<[], boolean>,
+  'getCounter' : ActorMethod<[], bigint>,
   'getErrors' : ActorMethod<[], Array<string>>,
   'getRecords' : ActorMethod<
     [],
@@ -165,6 +191,10 @@ export interface MVEvent {
     Array<SubscriptionRegisterResult>
   >,
   'registerExecutionListenerSyncCalled' : ActorMethod<[], bigint>,
+  'simulateSubscriptionCreation' : ActorMethod<
+    [boolean, string, [] | [ICRC16Map__2]],
+    Array<SubscriptionRegisterResult>
+  >,
   'simulate_notification' : ActorMethod<
     [[] | [Principal], Array<EventNotification>],
     undefined
@@ -173,31 +203,6 @@ export interface MVEvent {
     [Array<SubscriptionUpdateRequest>],
     Array<SubscriptionUpdateResult>
   >,
-}
-export type Namespace = string;
-export interface Stats {
-  'tt' : Stats__1,
-  'subscriptions' : Array<[bigint, SubscriptionRecord]>,
-  'readyForSubscription' : boolean,
-  'backlogs' : Array<[bigint, Array<[bigint, EventNotification__1]>]>,
-  'validBroadcasters' : { 'list' : Array<Principal> } |
-    { 'icrc75' : ICRC75Item },
-  'confirmTimer' : [] | [bigint],
-  'error' : [] | [string],
-  'confirmAccumulator' : Array<[Principal, Array<bigint>]>,
-  'broadcasters' : Array<[bigint, Array<Principal>]>,
-  'lastEventId' : Array<[string, Array<[bigint, bigint]>]>,
-  'icrc72OrchestratorCanister' : Principal,
-}
-export interface Stats__1 {
-  'timers' : bigint,
-  'maxExecutions' : bigint,
-  'minAction' : [] | [ActionDetail],
-  'cycles' : bigint,
-  'nextActionId' : bigint,
-  'nextTimer' : [] | [TimerId],
-  'expectedExecutionTime' : [] | [Time],
-  'lastExecutionTime' : Time,
 }
 export interface SubscriptionRecord {
   'id' : bigint,
@@ -244,6 +249,6 @@ export type Value__1 = { 'Int' : bigint } |
   { 'Blob' : Uint8Array | number[] } |
   { 'Text' : string } |
   { 'Array' : Array<Value__1> };
-export interface _SERVICE extends MVEvent {}
+export interface _SERVICE extends Subscriber {}
 export declare const idlFactory: IDL.InterfaceFactory;
 export declare const init: (args: { IDL: typeof IDL }) => IDL.Type[];

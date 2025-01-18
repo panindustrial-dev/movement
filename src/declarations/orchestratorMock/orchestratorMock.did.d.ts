@@ -120,7 +120,16 @@ export type ICRC16__2 = { 'Int' : bigint } |
   { 'ValueMap' : Array<[ICRC16__2, ICRC16__2]> } |
   { 'Class' : Array<ICRC16Property__2> };
 export interface ICRC75Item { 'principal' : Principal, 'namespace' : Namespace }
-export interface MVEvent {
+export type Namespace = string;
+export interface OrchestrationFilter {
+  'slice' : Array<OrchestrationQuerySlice>,
+  'statistics' : StatisticsFilter,
+}
+export type OrchestrationQuerySlice = { 'ByBroadcaster' : Principal } |
+  { 'ByPublisher' : Principal } |
+  { 'ByNamespace' : string } |
+  { 'BySubscriber' : Principal };
+export interface OrchestratorMock {
   'getConfirmNotices' : ActorMethod<[], Array<Array<bigint>>>,
   'getPublicationDeletes' : ActorMethod<
     [],
@@ -223,15 +232,6 @@ export interface MVEvent {
   >,
   'set_scenario' : ActorMethod<[string], undefined>,
 }
-export type Namespace = string;
-export interface OrchestrationFilter {
-  'slice' : Array<OrchestrationQuerySlice>,
-  'statistics' : StatisticsFilter,
-}
-export type OrchestrationQuerySlice = { 'ByBroadcaster' : Principal } |
-  { 'ByPublisher' : Principal } |
-  { 'ByNamespace' : string } |
-  { 'BySubscriber' : Principal };
 export type PublicationDeleteError = { 'GenericError' : GenericError } |
   { 'NotFound' : null } |
   { 'Unauthorized' : null } |
@@ -334,6 +334,6 @@ export type SubscriptionUpdateResult = [] | [
 ];
 export type ValidBroadcastersResponse = { 'list' : Array<Principal> } |
   { 'icrc75' : ICRC75Item };
-export interface _SERVICE extends MVEvent {}
+export interface _SERVICE extends OrchestratorMock {}
 export declare const idlFactory: IDL.InterfaceFactory;
 export declare const init: (args: { IDL: typeof IDL }) => IDL.Type[];

@@ -20,7 +20,12 @@ import type {
 import {idlFactory as orchestratorIDLFactory,
   init as orchestratorInit } from "../../src/declarations/orchestrator/orchestrator.did.js";
 import type {
-  _SERVICE as OrchService,} from "../../src/declarations/orchestrator/orchestrator.did.d";
+  PublicationUpdateRequest,
+  _SERVICE as OrchService,
+  PublicationDeleteRequest,
+  PublicationRegisterResult,
+  
+  SubscriptionRegistration} from "../../src/declarations/orchestrator/orchestrator.did.d";
 export const orch_WASM_PATH = ".dfx/local/canisters/orchestrator/orchestrator.wasm.gz"; 
 
 import {idlFactory as mockIDLFactory,
@@ -31,6 +36,7 @@ import { get } from "http";
 import { ICRC16Map, EventNotification, PublicationRegistration } from "../../src/declarations/orchestrator/orchestrator.did.js";
 import * as exp from "constants";
 import { register } from "module";
+import { SubscriptionUpdateRequest } from "../../src/declarations/example/example.did.js";
 export const orchestrator_WASM_PATH = ".dfx/local/canisters/orchestrator/orchestrator.wasm.gz"; 
 export const mock_WASM_PATH = ".dfx/local/canisters/orchestratorMock/orchestratorMock.wasm.gz"; 
 
@@ -76,7 +82,26 @@ function dataItemStringify(key: string, value: any) {
   }
 };
 
-describe("test broadcaster", () => {
+async function registerPublication(identity: Identity): Promise<PublicationRegisterResult[]> {
+  let pubResult = await orchestrator_fixture.actor.icrc72_register_publication([
+    {
+      namespace: "com.example.app.events",
+      config: [
+        ["icrc72:publication:publishers:allowed:list", {
+          "Array": [
+            { "Blob": new Uint8Array(Principal.fromText(identity.getPrincipal().toText()).toUint8Array()) }
+          ]
+        }],
+        ["icrc72:publication:mode", {
+          "Text": "fifo"
+        }]
+      ],
+      memo: []
+    }]);
+  return pubResult;
+};
+
+describe("test orchestrator publications", () => {
 
 
   async function setUpOrchestrator(scenario: string) {
@@ -152,6 +177,8 @@ describe("test broadcaster", () => {
     } */
     await pic.tearDown();
   });
+
+  
 
   // Orchestrator Initializes as expected
   it('should initialize successfully', async function testInitialization_Success() {
@@ -276,24 +303,10 @@ describe("test broadcaster", () => {
     // Setup the orchestrator with the default scenario
     await setUpOrchestrator("default");
 
-    // Define a valid PublicationRegistration object
-    const publicationRegistration: PublicationRegistration = {
-      namespace: "com.example.app.events",
-      config: [
-        ["icrc72:publication:publishers:allowed:list", {
-          "Array": [
-            { "Blob": new Uint8Array(Principal.fromText(alice.getPrincipal().toText()).toUint8Array()) }
-          ]
-        }],
-        ["icrc72:publication:mode", {
-          "Text": "fifo"
-        }]
-      ],
-      memo: []
-    };
+    
 
     // Call the register_publication method
-    const result = await orchestrator_fixture.actor.icrc72_register_publication([publicationRegistration]);
+    const result = await registerPublication(alice);
 
     // Assertions to verify successful registration
     expect(result).toBeDefined();
@@ -320,6 +333,26 @@ describe("test broadcaster", () => {
         ]),
       ])
     );
+    //does create pending event
+    expect(stats.icrc72Publisher.pendingEvents).toBeDefined();
+    expect(stats.icrc72Publisher.pendingEvents.length).toBeGreaterThan(0);
+    console.log("pendingEvents", JSON.stringify(stats.icrc72Publisher.pendingEvents, dataItemStringify, 2));
+    expect(stats.icrc72Publisher.pendingEvents[0]).toEqual(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          Map: expect.arrayContaining([
+            expect.arrayContaining([
+              "icrc72:broadcaster:publisher:add",
+              expect.anything(),
+            ]),
+          ]),
+        }),
+        namespace: "icrc72:broadcaster:sys:" + orchestrator_fixture.canisterId.toText(),
+      })
+    );
+
+    
+
   });
 
   /* it.only('should fail to register a publication with invalid config', async function testRegisterPublication_InvalidConfig() {
@@ -364,24 +397,10 @@ describe("test broadcaster", () => {
     // Change the orchestrator identity to an unauthorized principal (e.g., Alice)
     await orchestrator_fixture.actor.setIdentity(bob);
 
-    // Define a valid PublicationRegistration object
-    const publicationRegistration: PublicationRegistration = {
-      namespace: "com.example.app.events",
-      config: [
-        ["icrc72:publication:publishers:allowed:list", {
-          "Array": [
-            { "Blob": new Uint8Array(Principal.fromText(bob.getPrincipal().toText()).toUint8Array()) }
-          ]}
-        ],
-        ["icrc72:publication:mode", {
-          "Text": "fifo"
-        }]
-      ],
-      memo: []
-    };
+    
 
     // Call the register_publication method
-    const resultPre = await orchestrator_fixture.actor.icrc72_register_publication([publicationRegistration]);
+    const resultPre = await registerPublication(bob);
 
     console.log("resultPre", resultPre);
 
@@ -430,24 +449,10 @@ describe("test broadcaster", () => {
 
     orchestrator_fixture.actor.setIdentity(alice);
 
-    // Define a valid PublicationRegistration object
-    const publicationRegistration: PublicationRegistration = {
-      namespace: "com.example.app.events",
-      config: [
-        ["icrc72:publication:publishers:allowed:list", {
-          "Array": [
-            { "Blob": new Uint8Array(Principal.fromText(alice.getPrincipal().toText()).toUint8Array()) }
-          ]
-        }],
-        ["icrc72:publication:mode", {
-          "Text": "fifo"
-        }]
-      ],
-      memo: []
-    };
+    
 
     // Call the register_publication method for the first time
-    const firstResult = await orchestrator_fixture.actor.icrc72_register_publication([publicationRegistration]);
+    const firstResult = await registerPublication(alice);
 
 
     // Assertions for the first registration
@@ -465,7 +470,7 @@ describe("test broadcaster", () => {
     await pic.advanceTime(60_000); // Advance time by 60 seconds
     
     // Call the register_publication method for the duplicate registration
-    const duplicateResult = await orchestrator_fixture.actor.icrc72_register_publication([publicationRegistration]);
+    const duplicateResult = await registerPublication(alice);
 
     console.log("duplicateResult", JSON.stringify(duplicateResult, dataItemStringify,2));
 
@@ -566,7 +571,7 @@ describe("test broadcaster", () => {
     
   });
 
-  it.only('should handle duplicate entries when registering multiple publications', async function testRegisterMultiplePublications_WithDuplicates() {
+  it('should handle duplicate entries when registering multiple publications', async function testRegisterMultiplePublications_WithDuplicates() {
     // Setup the orchestrator with the default scenario
     await setUpOrchestrator("default");
 
@@ -692,261 +697,516 @@ describe("test broadcaster", () => {
 
   // Publication Update Tests
   it('should update a publication successfully', async function testUpdatePublication_Success() {
-    // todo: code pending.
+    // Arrange: Set up Orchestrator with the default scenario and register a publication
+    await setUpOrchestrator("defaultOrchestrator");
+
+    await pic.tick(5);
+    await pic.advanceTime(60_000); // Advance time by 60 seconds
+
+    orchestrator_fixture.actor.setIdentity(alice);
+
+    
+
+    // Register the publication and retrieve the publication ID
+    const registerResult = await registerPublication(alice);
+    expect(registerResult.length).toBe(1);
+    expect(registerResult[0]).toBeDefined();
+    if (registerResult[0][0] && 'Ok' in registerResult[0][0]) {
+      expect(registerResult[0][0].Ok).toBeGreaterThan(0);
+    } else {
+      throw new Error(`Expected Ok but got Err: ${JSON.stringify(registerResult[0][0])}`);
+    }
+
+    const publicationId = registerResult[0][0]?.Ok;
+
+    // add a controller
+    // Define the PublicationUpdateRequest to update the publication mode
+    let publicationUpdate: PublicationUpdateRequest = {
+      publication: { publicationId },
+      config: ["icrc72:publication:controllers:list:add", {
+          "Blob": bob.getPrincipal().toUint8Array()
+        }]
+      ,
+      memo: []
+    };
+
+    // Act: Perform the publication update
+    let updateResult = await orchestrator_fixture.actor.icrc72_update_publication([publicationUpdate]);
+
+    console.log("updateResult", updateResult);
+
+    // Assert: Verify the update was successful
+    expect(updateResult.length).toBe(1);
+    expect(updateResult[0]).toBeDefined();
+    if (updateResult[0][0] && 'Ok' in updateResult[0][0]) {
+      expect(updateResult[0][0].Ok).toBe(true);
+    } else {
+      throw new Error(`Expected Ok but got Err: ${JSON.stringify(updateResult[0][0], dataItemStringify, 2)}`);
+    }
+
+    // Fetch the Orchestrator's state and verify the update
+    let state = await orchestrator_fixture.actor.get_stats();
+    let foundPub = state.publications.find((pub) => pub[0] === publicationId);
+
+    expect(foundPub).toBeDefined();
+    expect(foundPub).toBeDefined();
+    if (foundPub) {
+      expect(foundPub[1].controllers.length).toEqual(2);
+    }
+
+    //remove a controller
+    publicationUpdate = {
+      publication: { publicationId },
+      config: ["icrc72:publication:controllers:list:remove", {
+          "Blob": bob.getPrincipal().toUint8Array()
+        }]
+      ,
+      memo: []
+    };
+
+    updateResult = await orchestrator_fixture.actor.icrc72_update_publication([publicationUpdate]);
+
+    console.log("updateResult", updateResult);
+
+    // Assert: Verify the update was successful
+    expect(updateResult.length).toBe(1);
+    expect(updateResult[0]).toBeDefined();
+    if (updateResult[
+      0][0] && 'Ok' in updateResult[0][0]) {
+      expect(updateResult[0][0].Ok).toBe(true);
+    } else {
+      throw new Error(`Expected Ok but got Err: ${JSON.stringify(updateResult[0][0], dataItemStringify, 2)}`);
+    };
+
+    // Fetch the Orchestrator's state and verify the update
+    state = await orchestrator_fixture.actor.get_stats();
+    foundPub = state.publications.find((pub) => pub[0] === publicationId);
+
+    expect(foundPub).toBeDefined();
+    expect(foundPub).toBeDefined();
+    if (foundPub) {
+      expect(foundPub[1].controllers.length).toEqual(1);
+    };
+
+    //add a publisher
+    publicationUpdate = {
+      publication: { publicationId },
+      config: ["icrc72:publication:publishers:allowed:list:add", {
+          "Blob": admin.getPrincipal().toUint8Array()
+        }]
+      ,
+      memo: []
+    };
+
+    updateResult = await orchestrator_fixture.actor.icrc72_update_publication([publicationUpdate]);
+
+    console.log("updateResult", updateResult);
+
+    // Assert: Verify the update was successful
+    expect(updateResult.length).toBe(1);
+    expect(updateResult[0]).toBeDefined();
+    if (updateResult[
+      0][0] && 'Ok' in updateResult[0][0]) {
+      expect(updateResult[0][0].Ok).toBe(true);
+    } else {
+      throw new Error(`Expected Ok but got Err: ${JSON.stringify(updateResult[0][0], dataItemStringify, 2)}`);
+    };
+
+    // Fetch the Orchestrator's state and verify the update
+    state = await orchestrator_fixture.actor.get_stats();
+    foundPub = state.publications.find((pub) => pub[0] === publicationId);
+
+    expect(foundPub).toBeDefined();
+    expect(foundPub).toBeDefined();
+    if (foundPub) {
+      console.log("foundPub", JSON.stringify(foundPub,dataItemStringify,2));
+      expect(foundPub[1].allowedPublishers[0] && 'allowed' in foundPub[1].allowedPublishers[0] && foundPub[1].allowedPublishers[0].allowed.length).toEqual(2);
+      
+    };
+
+    //remove a publisher
+    publicationUpdate = {
+      publication: { publicationId },
+      config: ["icrc72:publication:publishers:allowed:list:remove", {
+          "Blob": admin.getPrincipal().toUint8Array()
+        }]
+      ,
+      memo: []
+    };
+
+    updateResult = await orchestrator_fixture.actor.icrc72_update_publication([publicationUpdate]);
+
+    console.log("updateResult", updateResult);
+
+    // Assert: Verify the update was successful
+    expect(updateResult.length).toBe(1);
+    expect(updateResult[0]).toBeDefined();
+    if (updateResult[
+      0][0] && 'Ok' in updateResult[0][0]) {
+      expect(updateResult[0][0].Ok).toBe(true);
+    } else {
+      throw new Error(`Expected Ok but got Err: ${JSON.stringify(updateResult[0][0], dataItemStringify, 2)}`);
+    };
+
+    // Fetch the Orchestrator's state and verify the update
+    state = await orchestrator_fixture.actor.get_stats();
+    foundPub = state.publications.find((pub) => pub[0] === publicationId);
+
+    expect(foundPub).toBeDefined();
+    expect(foundPub).toBeDefined();
+    if (foundPub) {
+      expect(foundPub[1].allowedPublishers[0] && 'allowed' in foundPub[1].allowedPublishers[0] && foundPub[1].allowedPublishers[0].allowed.length).toEqual(1);
+    };
+
+    //add a subscriber
+    publicationUpdate = {
+      publication: { publicationId },
+      config: ["icrc72:publication:subscribers:allowed:list:add", {
+          "Blob": admin.getPrincipal().toUint8Array()
+        }]
+      ,
+      memo: []
+    };
+
+    updateResult = await orchestrator_fixture.actor.icrc72_update_publication([publicationUpdate]);
+
+    console.log("updateResult", updateResult);
+
+    // Assert: Verify the update was successful
+    expect(updateResult.length).toBe(1);
+    expect(updateResult[0]).toBeDefined();
+    if (updateResult[
+      0][0] && 'Ok' in updateResult[0][0]) {
+      expect(updateResult[0][0].Ok).toBe(true);
+    } else {
+      throw new Error(`Expected Ok but got Err: ${JSON.stringify(updateResult[0][0], dataItemStringify, 2)}`);
+    };
+
+    // Fetch the Orchestrator's state and verify the update
+    state = await orchestrator_fixture.actor.get_stats();
+    foundPub = state.publications.find((pub) => pub[0] === publicationId);
+
+    expect(foundPub).toBeDefined();
+    expect(foundPub).toBeDefined();
+    if (foundPub) {
+      console.log("foundPub", JSON.stringify(foundPub,dataItemStringify,2));
+      expect(foundPub[1].allowedSubscribers[0] && 'allowed' in foundPub[1].allowedSubscribers[0] && foundPub[1].allowedSubscribers[0].allowed.length).toEqual(1);
+      
+    };
+
+    //remove a subscriber
+    publicationUpdate = {
+      publication: { publicationId },
+      config: ["icrc72:publication:subscribers:allowed:list:remove", {
+          "Blob": admin.getPrincipal().toUint8Array()
+        }]
+      ,
+      memo: []
+    };
+
+    updateResult = await orchestrator_fixture.actor.icrc72_update_publication([publicationUpdate]);
+
+    console.log("updateResult", updateResult);
+
+    // Assert: Verify the update was successful
+    expect(updateResult.length).toBe(1);
+    expect(updateResult[0]).toBeDefined();
+    if (updateResult[
+      0][0] && 'Ok' in updateResult[0][0]) {
+      expect(updateResult[0][0].Ok).toBe(true);
+    } else {
+      throw new Error(`Expected Ok but got Err: ${JSON.stringify(updateResult[0][0], dataItemStringify, 2)}`);
+    };
+
+    // Fetch the Orchestrator's state and verify the update
+    state = await orchestrator_fixture.actor.get_stats();
+    foundPub = state.publications.find((pub) => pub[0] === publicationId);
+
+    expect(foundPub).toBeDefined();
+    expect(foundPub).toBeDefined();
+    if (foundPub) {
+      console.log("foundPub", JSON.stringify(foundPub,dataItemStringify,2));
+      expect(foundPub[1].allowedSubscribers[0] && 'allowed' in foundPub[1].allowedSubscribers[0] && foundPub[1].allowedSubscribers[0].allowed.length).toEqual(0);
+      
+    };
+
+
   });
 
   it('should not update a publication with invalid data', async function testUpdatePublication_InvalidUpdate() {
-    // todo: code pending.
+    // Arrange: Set up Orchestrator with the default scenario and register a publication
+    await setUpOrchestrator("defaultOrchestrator");
+
+    await pic.tick(5);
+    await pic.advanceTime(60_000); // Advance time by 60 seconds
+
+    
+    // Register the publication and retrieve the publication ID
+    const registerResult = await registerPublication(alice);
+    expect(registerResult.length).toBe(1);
+    expect(registerResult[0]).toBeDefined();
+    if (registerResult[0][0] && 'Ok' in registerResult[0][0]) {
+      expect(registerResult[0][0].Ok).toBeGreaterThan(0);
+    } else {
+      throw new Error(`Expected Ok but got Err: ${JSON.stringify(registerResult[0][0])}`);
+    }
+
+    const publicationId = registerResult[0][0]?.Ok;
+
+    // Define the PublicationUpdateRequest to update the publication mode
+    const publicationUpdate: PublicationUpdateRequest = {
+      publication: { publicationId },
+      config: ["icrc72:publication:unsupported-key", {
+          "Text": "invalid"
+        }]
+      ,
+      memo: []
+    };
+
+    // Act: Perform the publication update
+    const updateResult = await orchestrator_fixture.actor.icrc72_update_publication([publicationUpdate]);
+
+    // Assert: Verify the update was successful
+    expect(updateResult.length).toBe(1);
+    expect(updateResult[0]).toBeDefined();
+    if (updateResult[0][0] && 'Err' in updateResult[0][0]) {
+      expect(updateResult[0][0].Err).toBeDefined();
+    } else {
+      throw new Error(`Expected Err but got Ok: ${JSON.stringify(updateResult[0][0], dataItemStringify, 2)}`);
+    }
+
   });
 
   it('should prevent unauthorized callers from updating publications', async function testUpdatePublication_Unauthorized() {
-    // todo: code pending.
+    await setUpOrchestrator("defaultOrchestrator");
+
+    await pic.tick(5);
+    await pic.advanceTime(60_000); // Advance time by 60 seconds
+
+    // Register as admin and publish a publication
+    let result = await mock_fixture.actor.setIdentity(admin);
+    
+    const publicationRegistration: PublicationRegistration = {
+      namespace: "com.example.app.events",
+      config: [
+        ["icrc72:publication:publishers:allowed:list", {
+          "Array": [
+            { "Blob": new Uint8Array(Principal.fromText(admin.getPrincipal().toText()).toUint8Array()) }
+          ]
+        }],
+        ["icrc72:publication:mode", {
+          "Text": "fifo"
+        }],
+        ["icrc72:publication:controllers", {
+          "Blob": bob.getPrincipal().toUint8Array()
+        }],
+
+      ],
+      memo: []
+    };
+
+    const registerResult = await orchestrator_fixture.actor.icrc72_register_publication([publicationRegistration]);
+    expect(registerResult.length).toBe(1);
+    expect(registerResult[0]).toBeDefined();
+    if (registerResult[0][0] && 'Ok' in registerResult[0][0]) {
+      expect(registerResult[0][0].Ok).toBeGreaterThan(0);
+    } else {
+      throw new Error(`Expected Ok but got Err: ${JSON.stringify(registerResult[0][0])}`);
+    }
+
+    const publicationId = registerResult[0][0]?.Ok;
+
+    // Change identity to unauthorized user (alice)
+    await orchestrator_fixture.actor.setIdentity(alice);
+
+    // Define a valid PublicationUpdateRequest targeting the publication
+    const publicationUpdate: PublicationUpdateRequest = {
+      publication: { publicationId },
+      config: 
+        ["icrc72:publication:publishers:allowed:list:add", {
+          "Blob": admin.getPrincipal().toUint8Array()
+        }]
+      ,
+      memo: []
+    };
+
+    // Act: Attempt to perform the publication update as unauthorized caller
+    const updateResult = await orchestrator_fixture.actor.icrc72_update_publication([publicationUpdate]);
+
+    // Assert: Verify that the update failed with Unauthorized error
+    expect(updateResult.length).toBe(1);
+    expect(updateResult[0]).toBeDefined();
+    if (updateResult[0][0] && 'Err' in updateResult[0][0]) {
+      expect(updateResult[0][0].Err).toBeDefined();
+      expect(updateResult[0][0].Err).toEqual({
+        "Unauthorized": null
+      });
+    } else {
+      throw new Error(`Expected Err but got Ok: ${JSON.stringify(updateResult[0], null, 2)}`);
+    }
   });
 
   it('should handle updates to non-existing publications gracefully', async function testUpdatePublication_NotFound() {
-    // todo: code pending.
+    // Arrange: Set up Orchestrator with the default scenario
+  await setUpOrchestrator("defaultOrchestrator");
+
+  // Define a non-existing PublicationIdentifier
+  const nonExistingPublicationId = 9999n;
+
+  const publicationUpdate: PublicationUpdateRequest = {
+    publication: { publicationId: nonExistingPublicationId },
+    config: 
+      ["icrc72:publication:mode", {
+        "Text": "priority"
+      }]
+    ,
+    memo: []
+  };
+
+    // Act: Attempt to perform the publication update on non-existing publication
+    const updateResult = await orchestrator_fixture.actor.icrc72_update_publication([publicationUpdate]);
+
+    // Assert: Verify that the update failed with NotFound error
+    expect(updateResult.length).toBe(1);
+    expect(updateResult[0]).toBeDefined();
+    if (updateResult[0][0] && 'Err' in updateResult[0][0]) {
+      expect(updateResult[0][0].Err).toBeDefined();
+      expect(updateResult[0][0].Err).toEqual({
+        "NotFound": null
+      });
+    } else {
+      throw new Error(`Expected Err but got Ok: ${JSON.stringify(updateResult[0], null, 2)}`);
+    }
   });
 
   // Publication Deletion Tests
   it('should delete a publication successfully', async function testDeletePublication_Success() {
-    // todo: code pending.
+    // Arrange: Set up Orchestrator with the default scenario and register a publication
+    await setUpOrchestrator("defaultOrchestrator");
+
+    await pic.tick(5);
+    await pic.advanceTime(60_000); // Advance time by 60 seconds
+
+   
+  
+    const registerResult = await registerPublication(admin);
+    expect(registerResult.length).toBe(1);
+    expect(registerResult[0]).toBeDefined();
+    if (registerResult[0][0] && 'Ok' in registerResult[0][0]) {
+      expect(registerResult[0][0].Ok).toBeGreaterThan(0);
+    } else {
+      throw new Error(`Expected Ok but got Err: ${JSON.stringify(registerResult[0][0])}`);
+    }
+
+    let stats = await orchestrator_fixture.actor.get_stats();
+
+    expect(stats.publications.length).toBe(4);
+  
+    const publicationId = registerResult[0][0]?.Ok;
+  
+    // Act: Delete the publication
+    const deleteRequest: PublicationDeleteRequest = {
+      publication: { publicationId },
+      memo: []
+    };
+  
+    const deleteResult = await orchestrator_fixture.actor.icrc72_delete_publication([deleteRequest]);
+
+    await pic.tick(5);
+    await pic.advanceTime(60_000); // Advance time by 60 seconds
+
+    console.log("deleteResult", deleteResult);
+  
+    // Assert: Verify the deletion was successful
+    expect(deleteResult.length).toBe(1);
+    expect(deleteResult[0]).toBeDefined();
+    if (deleteResult[0] && deleteResult[0][0] && 'Ok' in deleteResult[0][0]) {
+      expect(deleteResult[0][0].Ok).toBe(true);
+    } else {
+      throw new Error(`Expected Ok but got Err: ${JSON.stringify(deleteResult[0][0])}`);
+    }
+  
+    // Fetch the Orchestrator's state and verify the publication has been removed
+    const state = await orchestrator_fixture.actor.get_stats();
+    console.log("state", JSON.stringify(state, dataItemStringify, 2));
+    expect(state.publications.length).toBe(3);
   });
 
   it('should prevent unauthorized callers from deleting publications', async function testDeletePublication_Unauthorized() {
-    // todo: code pending.
+    // Arrange: Set up Orchestrator with the default scenario and register a publication
+    await setUpOrchestrator("defaultOrchestrator");
+
+    // Register as admin and publish a publication
+    let result = await mock_fixture.actor.setIdentity(admin);
+    let result2 = await mock_fixture.actor.set_scenario("default");
+    
+    
+
+    const registerResult = await registerPublication(admin);
+    expect(registerResult.length).toBe(1);
+    expect(registerResult[0]).toBeDefined();
+    if (registerResult[0][0] && 'Ok' in registerResult[0][0]) {
+      expect(registerResult[0][0].Ok).toBeGreaterThan(0);
+    } else {
+      throw new Error(`Expected Ok but got Err: ${JSON.stringify(registerResult[0][0])}`);
+    }
+
+    const publicationId = registerResult[0][0]?.Ok;
+
+    // Change identity to unauthorized user (bob)
+    await orchestrator_fixture.actor.setIdentity(bob);
+
+    // Define a PublicationDeleteRequest targeting the publication
+    const deleteRequest: PublicationDeleteRequest = {
+      publication: { publicationId },
+      memo: []
+    };
+
+    // Act: Attempt to delete the publication as unauthorized caller
+    const deleteResult = await orchestrator_fixture.actor.icrc72_delete_publication([deleteRequest]);
+
+    // Assert: Verify that the deletion failed with Unauthorized error
+    expect(deleteResult.length).toBe(1);
+    expect(deleteResult[0]).toBeDefined();
+    if (deleteResult[0][0] && 'Err' in deleteResult[0][0]) {
+      expect(deleteResult[0][0].Err).toBeDefined();
+      expect(deleteResult[0][0].Err).toEqual({
+        "Unauthorized": null
+      });
+    } else {
+      throw new Error(`Expected Err but got Ok: ${JSON.stringify(deleteResult[0], null, 2)}`);
+    }
+
+    // Reset identity to admin for further tests
+    await orchestrator_fixture.actor.setIdentity(admin);
   });
 
   it('should handle deletion of non-existing publications gracefully', async function testDeletePublication_NotFound() {
-    // todo: code pending.
-  });
+    // Arrange: Set up Orchestrator with the default scenario
+    await setUpOrchestrator("defaultOrchestrator");
 
-  // Subscription Registration Tests
-  it('should register a subscription successfully', async function testRegisterSubscription_Success() {
-    // todo: code pending.
-  });
+    // Define a non-existing PublicationIdentifier
+    const nonExistingPublicationId = 9999n;
 
-  it('should fail to register a subscription with invalid config', async function testRegisterSubscription_InvalidConfig() {
-    // todo: code pending.
-  });
+    const deleteRequest: PublicationDeleteRequest = {
+      publication: { publicationId: nonExistingPublicationId },
+      memo: []
+    };
 
-  it('should prevent unauthorized callers from registering subscriptions', async function testRegisterSubscription_Unauthorized() {
-    // todo: code pending.
-  });
+    // Act: Attempt to delete a non-existing publication
+    const deleteResult = await orchestrator_fixture.actor.icrc72_delete_publication([deleteRequest]);
 
-  it('should handle duplicate subscription registrations correctly', async function testRegisterSubscription_Duplicate() {
-    // todo: code pending.
-  });
-
-  // Multiple Subscription Registrations
-  it('should register multiple subscriptions successfully', async function testRegisterMultipleSubscriptions_Success() {
-    // todo: code pending.
-  });
-
-  it('should handle duplicate entries when registering multiple subscriptions', async function testRegisterMultipleSubscriptions_WithDuplicates() {
-    // todo: code pending.
-  });
-
-  // Subscription Update Tests
-  it('should update a subscription successfully', async function testUpdateSubscription_Success() {
-    // todo: code pending.
-  });
-
-  it('should not update a subscription with invalid data', async function testUpdateSubscription_InvalidUpdate() {
-    // todo: code pending.
-  });
-
-  it('should prevent unauthorized callers from updating subscriptions', async function testUpdateSubscription_Unauthorized() {
-    // todo: code pending.
-  });
-
-  it('should handle updates to non-existing subscriptions gracefully', async function testUpdateSubscription_NotFound() {
-    // todo: code pending.
-  });
-
-  // Subscription Deletion Tests
-  it('should delete a subscription successfully', async function testDeleteSubscription_Success() {
-    // todo: code pending.
-  });
-
-  it('should prevent unauthorized callers from deleting subscriptions', async function testDeleteSubscription_Unauthorized() {
-    // todo: code pending.
-  });
-
-  it('should handle deletion of non-existing subscriptions gracefully', async function testDeleteSubscription_NotFound() {
-    // todo: code pending.
-  });
-
-  // Broadcaster Retrieval Tests
-  it('should retrieve a list of valid broadcasters', async function testGetValidBroadcasters_Success() {
-    // todo: code pending.
-  });
-
-  it('should retrieve ICRC75-based broadcasters when applicable', async function testGetValidBroadcasters_WithICRC75() {
-    // todo: code pending.
-  });
-
-  // Publisher Retrieval Tests
-  it('should retrieve a list of publishers without filters', async function testGetPublishers_Success() {
-    // todo: code pending.
-  });
-
-  it('should handle retrieval of publishers when no publishers exist', async function testGetPublishers_EmptyList() {
-    // todo: code pending.
-  });
-
-  it('should retrieve publishers with specific filters', async function testGetPublishers_WithFilters() {
-    // todo: code pending.
-  });
-
-  it('should handle pagination when retrieving publishers', async function testGetPublishers_Pagination() {
-    // todo: code pending.
-  });
-
-  // Publication Retrieval Tests
-  it('should retrieve a list of publications without filters', async function testGetPublications_Success() {
-    // todo: code pending.
-  });
-
-  it('should handle retrieval of publications when no publications exist', async function testGetPublications_EmptyList() {
-    // todo: code pending.
-  });
-
-  it('should retrieve publications with specific filters', async function testGetPublications_WithFilters() {
-    // todo: code pending.
-  });
-
-  it('should handle pagination when retrieving publications', async function testGetPublications_Pagination() {
-    // todo: code pending.
-  });
-
-  // Subscriber Retrieval Tests
-  it('should retrieve a list of subscribers without filters', async function testGetSubscribers_Success() {
-    // todo: code pending.
-  });
-
-  it('should handle retrieval of subscribers when no subscribers exist', async function testGetSubscribers_EmptyList() {
-    // todo: code pending.
-  });
-
-  it('should retrieve subscribers with specific filters', async function testGetSubscribers_WithFilters() {
-    // todo: code pending.
-  });
-
-  it('should handle pagination when retrieving subscribers', async function testGetSubscribers_Pagination() {
-    // todo: code pending.
-  });
-
-  // Subscription Retrieval Tests
-  it('should retrieve a list of subscriptions without filters', async function testGetSubscriptions_Success() {
-    // todo: code pending.
-  });
-
-  it('should handle retrieval of subscriptions when no subscriptions exist', async function testGetSubscriptions_EmptyList() {
-    // todo: code pending.
-  });
-
-  it('should retrieve subscriptions with specific filters', async function testGetSubscriptions_WithFilters() {
-    // todo: code pending.
-  });
-
-  it('should handle pagination when retrieving subscriptions', async function testGetSubscriptions_Pagination() {
-    // todo: code pending.
-  });
-
-  // Broadcaster Retrieval Tests
-  it('should retrieve a list of broadcasters without filters', async function testGetBroadcasters_Success() {
-    // todo: code pending.
-  });
-
-  it('should handle retrieval of broadcasters when no broadcasters exist', async function testGetBroadcasters_EmptyList() {
-    // todo: code pending.
-  });
-
-  it('should retrieve broadcasters with specific filters', async function testGetBroadcasters_WithFilters() {
-    // todo: code pending.
-  });
-
-  it('should handle pagination when retrieving broadcasters', async function testGetBroadcasters_Pagination() {
-    // todo: code pending.
-  });
-
-  // Notification Confirmation Tests
-  it('should confirm notifications successfully', async function testConfirmNotifications_Success() {
-    // todo: code pending.
-  });
-
-  it('should handle partial failures when confirming notifications', async function testConfirmNotifications_PartialFailures() {
-    // todo: code pending.
-  });
-
-  it('should handle complete failures when confirming notifications', async function testConfirmNotifications_AllFailures() {
-    // todo: code pending.
-  });
-
-  // Publisher Error Handling Tests
-  it('should handle publisher errors appropriately', async function testHandlePublisherError_Success() {
-    // todo: code pending.
-  });
-
-  it('should handle unexpected publisher errors gracefully', async function testHandlePublisherError_InvalidError() {
-    // todo: code pending.
-  });
-
-  // Relay Broadcaster Management Tests
-  it('should add a relay broadcaster successfully', async function testHandleRelay_Add_Success() {
-    // todo: code pending.
-  });
-
-  it('should handle adding duplicate relay broadcasters', async function testHandleRelay_Add_Duplicate() {
-    // todo: code pending.
-  });
-
-  it('should remove a relay broadcaster successfully', async function testHandleRelay_Remove_Success() {
-    // todo: code pending.
-  });
-
-  it('should handle removing non-existing relay broadcasters gracefully', async function testHandleRelay_Remove_NotExist() {
-    // todo: code pending.
-  });
-
-  // Transaction Deduplication Test
-  it('should prevent event duplication', async function testTransactionDeduplication() {
-    // todo: code pending.
-  });
-
-  // Event Ordering Test
-  it('should maintain correct event ordering', async function testEventOrdering() {
-    // todo: code pending.
-  });
-
-  // Dynamic Orchestration Updates Test
-  it('should update orchestration parameters dynamically', async function testDynamicOrchestrationUpdates() {
-    // todo: code pending.
-  });
-
-  // State Persistence Test
-  it('should persist orchestrator state across upgrades', async function testOrchestratorStatePersistence() {
-    // todo: code pending.
-  });
-
-  // Internal Error Handling Test
-  it('should handle internal orchestrator errors gracefully', async function testOrchestratorErrorHandling() {
-    // todo: code pending.
-  });
-
-  // Security Authorization Checks Test
-  it('should enforce security authorization checks consistently', async function testSecurityAuthorizationChecks() {
-    // todo: code pending.
-  });
-
-  // Subscription Activation Test
-  it('should correctly activate subscriptions', async function testSubscriptionActivation() {
-    // todo: code pending.
-  });
-
-  // Subscription Deactivation Test
-  it('should correctly deactivate subscriptions', async function testSubscriptionDeactivation() {
-    // todo: code pending.
+    // Assert: Verify that the deletion failed with NotFound error
+    expect(deleteResult.length).toBe(1);
+    expect(deleteResult[0]).toBeDefined();
+    if (deleteResult[0][0] && 'Err' in deleteResult[0][0]) {
+      expect(deleteResult[0][0].Err).toBeDefined();
+      expect(deleteResult[0][0].Err).toEqual({
+        "NotFound": null
+      });
+    } else {
+      throw new Error(`Expected Err but got Ok: ${JSON.stringify(deleteResult[0], null, 2)}`);
+    }
   });
 
   

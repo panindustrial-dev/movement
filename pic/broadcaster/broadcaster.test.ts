@@ -595,7 +595,7 @@ describe("test broadcaster", () => {
 
 }
 
-it.only("test broadcaster register and deregisteres relay success", testBroadcasterRegisterRelaySuccess);
+it("test broadcaster register and deregisteres relay success", testBroadcasterRegisterRelaySuccess);
 
  /**
    * Test registering and removing a new publisher from Broadcaster.

@@ -239,8 +239,9 @@ export const idlFactory = ({ IDL }) => {
   const SubscriptionUpdateResult = IDL.Opt(
     IDL.Variant({ 'Ok' : IDL.Bool, 'Err' : SubscriptionUpdateError })
   );
-  const MVEvent = IDL.Service({
+  const Subscriber = IDL.Service({
     'checkRegisteredExecutionListener' : IDL.Func([], [IDL.Bool], []),
+    'getCounter' : IDL.Func([], [IDL.Nat], ['query']),
     'getErrors' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
     'getRecords' : IDL.Func(
         [],
@@ -283,6 +284,11 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'registerExecutionListenerSyncCalled' : IDL.Func([], [IDL.Nat], []),
+    'simulateSubscriptionCreation' : IDL.Func(
+        [IDL.Bool, IDL.Text, IDL.Opt(ICRC16Map__2)],
+        [IDL.Vec(SubscriptionRegisterResult)],
+        [],
+      ),
     'simulate_notification' : IDL.Func(
         [IDL.Opt(IDL.Principal), IDL.Vec(EventNotification)],
         [],
@@ -294,7 +300,7 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
   });
-  return MVEvent;
+  return Subscriber;
 };
 export const init = ({ IDL }) => {
   const Time = IDL.Nat;

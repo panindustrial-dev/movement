@@ -70,6 +70,42 @@ type SubscriptionRecord =
    id: nat;
    namespace: text;
  };
+type Subscriber = 
+ service {
+   checkRegisteredExecutionListener: () -> (bool);
+   getCounter: () -> (nat) query;
+   getErrors: () -> (vec text) query;
+   getRecords: () ->
+    (vec record {
+           vec record {
+                 text;
+                 Value;
+               };
+           vec record {
+                 text;
+                 Value;
+               };
+         }) query;
+   get_stats: () -> (Stats) query;
+   get_subnet_for_canister: () ->
+    (variant {
+       Err: text;
+       Ok: record {subnet_id: opt principal;};
+     }) query;
+   hello: () -> (text);
+   icrc72_handle_notification: (vec EventNotification) -> () oneway;
+   registerExecutionListenerASync: (opt ICRC16Map__2) ->
+    (vec SubscriptionRegisterResult);
+   registerExecutionListenerASyncCalled: () -> (nat);
+   registerExecutionListenerSync: (opt ICRC16Map__2) ->
+    (vec SubscriptionRegisterResult);
+   registerExecutionListenerSyncCalled: () -> (nat);
+   simulateSubscriptionCreation: (bool, text, opt ICRC16Map__2) ->
+    (vec SubscriptionRegisterResult);
+   simulate_notification: (opt principal, vec EventNotification) -> () oneway;
+   updateSubscription: (vec SubscriptionUpdateRequest) ->
+    (vec SubscriptionUpdateResult);
+ };
 type Stats__1 = 
  record {
    cycles: nat;
@@ -120,39 +156,6 @@ type Stats =
                       };
  };
 type Namespace = text;
-type MVEvent = 
- service {
-   checkRegisteredExecutionListener: () -> (bool);
-   getErrors: () -> (vec text) query;
-   getRecords: () ->
-    (vec record {
-           vec record {
-                 text;
-                 Value;
-               };
-           vec record {
-                 text;
-                 Value;
-               };
-         }) query;
-   get_stats: () -> (Stats) query;
-   get_subnet_for_canister: () ->
-    (variant {
-       Err: text;
-       Ok: record {subnet_id: opt principal;};
-     }) query;
-   hello: () -> (text);
-   icrc72_handle_notification: (vec EventNotification) -> () oneway;
-   registerExecutionListenerASync: (opt ICRC16Map__2) ->
-    (vec SubscriptionRegisterResult);
-   registerExecutionListenerASyncCalled: () -> (nat);
-   registerExecutionListenerSync: (opt ICRC16Map__2) ->
-    (vec SubscriptionRegisterResult);
-   registerExecutionListenerSyncCalled: () -> (nat);
-   simulate_notification: (opt principal, vec EventNotification) -> () oneway;
-   updateSubscription: (vec SubscriptionUpdateRequest) ->
-    (vec SubscriptionUpdateResult);
- };
 type InitArgs = record {name: text;};
 type ICRC75Item = 
  record {
@@ -356,4 +359,4 @@ service : (opt
               icrc72SubscriberArgs: opt InitArgs;
               orchestrator: principal;
               ttArgs: opt Args;
-            }) -> MVEvent
+            }) -> Subscriber

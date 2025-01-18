@@ -79,18 +79,6 @@ export const idlFactory = ({ IDL }) => {
   const Args = IDL.Opt(ArgList);
   const InitArgs__2 = IDL.Record({ 'name' : IDL.Text });
   const InitArgs = IDL.Record({ 'name' : IDL.Text });
-  const ActionDetail = IDL.Tuple(ActionId, Action);
-  const TimerId = IDL.Nat;
-  const Stats__3 = IDL.Record({
-    'timers' : IDL.Nat,
-    'maxExecutions' : IDL.Nat,
-    'minAction' : IDL.Opt(ActionDetail),
-    'cycles' : IDL.Nat,
-    'nextActionId' : IDL.Nat,
-    'nextTimer' : IDL.Opt(TimerId),
-    'expectedExecutionTime' : IDL.Opt(Time),
-    'lastExecutionTime' : Time,
-  });
   const ICRC16Property__3 = IDL.Record({
     'value' : ICRC16__3,
     'name' : IDL.Text,
@@ -125,6 +113,23 @@ export const idlFactory = ({ IDL }) => {
     })
   );
   const ICRC16Map__3 = IDL.Vec(IDL.Tuple(IDL.Text, ICRC16__3));
+  const StakeRecord = IDL.Record({
+    'principal' : IDL.Opt(IDL.Principal),
+    'stake' : IDL.Nat,
+    'timestamp' : IDL.Nat,
+  });
+  const EventNotificationRecordShared__1 = IDL.Record({
+    'id' : IDL.Nat,
+    'bConfirmed' : IDL.Opt(IDL.Nat),
+    'eventId' : IDL.Nat,
+    'destination' : IDL.Principal,
+    'headers' : IDL.Opt(ICRC16Map__3),
+    'stake' : StakeRecord,
+    'filter' : IDL.Opt(IDL.Text),
+    'bSent' : IDL.Opt(IDL.Nat),
+    'timerId' : IDL.Opt(IDL.Nat),
+    'publication' : IDL.Text,
+  });
   const Event__1 = IDL.Record({
     'id' : IDL.Nat,
     'source' : IDL.Principal,
@@ -134,17 +139,30 @@ export const idlFactory = ({ IDL }) => {
     'prevId' : IDL.Opt(IDL.Nat),
     'namespace' : IDL.Text,
   });
+  const EventRecordShared__1 = IDL.Record({
+    'relayQueue' : IDL.Vec(IDL.Principal),
+    'notifications' : IDL.Vec(IDL.Nat),
+    'notificationQueue' : IDL.Vec(IDL.Nat),
+    'event' : Event__1,
+  });
+  const ActionDetail = IDL.Tuple(ActionId, Action);
+  const TimerId = IDL.Nat;
+  const Stats__3 = IDL.Record({
+    'timers' : IDL.Nat,
+    'maxExecutions' : IDL.Nat,
+    'minAction' : IDL.Opt(ActionDetail),
+    'cycles' : IDL.Nat,
+    'nextActionId' : IDL.Nat,
+    'nextTimer' : IDL.Opt(TimerId),
+    'expectedExecutionTime' : IDL.Opt(Time),
+    'lastExecutionTime' : Time,
+  });
   const EventRecordShared = IDL.Record({
     'relayQueue' : IDL.Vec(IDL.Principal),
     'notifications' : IDL.Vec(IDL.Nat),
     'notificationQueue' : IDL.Vec(IDL.Nat),
     'event' : Event__1,
   });
-  const PublicationRecord = IDL.Record({
-    'id' : IDL.Nat,
-    'namespace' : IDL.Text,
-  });
-  const ActionId__1 = IDL.Record({ 'id' : IDL.Nat, 'time' : Time });
   const ICRC16Property__4 = IDL.Record({
     'value' : ICRC16__4,
     'name' : IDL.Text,
@@ -220,8 +238,14 @@ export const idlFactory = ({ IDL }) => {
     ),
     'icrc72OrchestratorCanister' : IDL.Principal,
   });
+  const PublicationRecord = IDL.Record({
+    'id' : IDL.Nat,
+    'namespace' : IDL.Text,
+  });
+  const ActionId__1 = IDL.Record({ 'id' : IDL.Nat, 'time' : Time });
   const Stats__1 = IDL.Record({
     'tt' : Stats__3,
+    'icrc72Subscriber' : Stats__2,
     'error' : IDL.Opt(IDL.Text),
     'orchestrator' : IDL.Principal,
     'readyForPublications' : IDL.Bool,
@@ -233,12 +257,12 @@ export const idlFactory = ({ IDL }) => {
     'broadcasters' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Vec(IDL.Principal))),
     'publications' : IDL.Vec(IDL.Tuple(IDL.Nat, PublicationRecord)),
     'drainEventId' : IDL.Opt(ActionId__1),
-    'subscriber' : Stats__2,
+    'icrc72OrchestratorCanister' : IDL.Principal,
   });
   const SubscriptionRecordShared = IDL.Record({
     'id' : IDL.Nat,
     'skip' : IDL.Opt(IDL.Tuple(IDL.Nat, IDL.Nat)),
-    'stake' : IDL.Nat,
+    'stake' : StakeRecord,
     'filter' : IDL.Opt(IDL.Text),
     'config' : ICRC16Map__3,
     'namespace' : IDL.Text,
@@ -260,7 +284,7 @@ export const idlFactory = ({ IDL }) => {
     'eventId' : IDL.Nat,
     'destination' : IDL.Principal,
     'headers' : IDL.Opt(ICRC16Map__3),
-    'stake' : IDL.Nat,
+    'stake' : StakeRecord,
     'filter' : IDL.Opt(IDL.Text),
     'bSent' : IDL.Opt(IDL.Nat),
     'timerId' : IDL.Opt(IDL.Nat),
@@ -282,9 +306,7 @@ export const idlFactory = ({ IDL }) => {
     'registeredSubscribers' : IDL.Vec(
       IDL.Tuple(IDL.Principal, SubscriberRecordShared)
     ),
-    'stakeIndex' : IDL.Vec(
-      IDL.Tuple(IDL.Nat, IDL.Vec(IDL.Tuple(IDL.Nat, IDL.Principal)))
-    ),
+    'stakeIndex' : IDL.Vec(IDL.Tuple(StakeRecord, IDL.Principal)),
     'registeredRelay' : IDL.Vec(
       IDL.Tuple(IDL.Principal, IDL.Opt(IDL.Vec(IDL.Text)))
     ),
@@ -429,6 +451,15 @@ export const idlFactory = ({ IDL }) => {
     'Err' : PublishError,
   });
   const MVEvent = IDL.Service({
+    'getHandledNotifications' : IDL.Func(
+        [],
+        [
+          IDL.Vec(
+            IDL.Tuple(EventNotificationRecordShared__1, EventRecordShared__1)
+          ),
+        ],
+        ['query'],
+      ),
     'get_stats' : IDL.Func([], [Stats], ['query']),
     'get_subnet_for_canister' : IDL.Func(
         [],
@@ -456,6 +487,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(IDL.Opt(PublishResult))],
         [],
       ),
+    'initialize' : IDL.Func([], [], []),
     'simulatePublish' : IDL.Func(
         [IDL.Nat, IDL.Text, IDL.Nat, IDL.Principal],
         [IDL.Vec(IDL.Opt(PublishResult))],

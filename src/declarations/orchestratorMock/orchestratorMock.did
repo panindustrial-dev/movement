@@ -156,20 +156,7 @@ type PublicationDeleteError =
    NotFound;
    Unauthorized;
  };
-type OrchestrationQuerySlice = 
- variant {
-   ByBroadcaster: principal;
-   ByNamespace: text;
-   ByPublisher: principal;
-   BySubscriber: principal;
- };
-type OrchestrationFilter = 
- record {
-   slice: vec OrchestrationQuerySlice;
-   statistics: StatisticsFilter;
- };
-type Namespace = text;
-type MVEvent = 
+type OrchestratorMock = 
  service {
    getConfirmNotices: () -> (vec vec nat) query;
    getPublicationDeletes: () -> (vec vec PublicationDeleteRequest) query;
@@ -228,6 +215,19 @@ type MVEvent =
     (vec SubscriptionUpdateResult);
    set_scenario: (text) -> () oneway;
  };
+type OrchestrationQuerySlice = 
+ variant {
+   ByBroadcaster: principal;
+   ByNamespace: text;
+   ByPublisher: principal;
+   BySubscriber: principal;
+ };
+type OrchestrationFilter = 
+ record {
+   slice: vec OrchestrationQuerySlice;
+   statistics: StatisticsFilter;
+ };
+type Namespace = text;
 type ICRC75Item = 
  record {
    namespace: Namespace;
@@ -403,4 +403,4 @@ type BroadcasterInfo =
    broadcaster: principal;
    stats: Stats;
  };
-service : () -> MVEvent
+service : () -> OrchestratorMock

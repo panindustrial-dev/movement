@@ -10,7 +10,7 @@ type SubscriptionRecordShared =
                nat;
                nat;
              };
-   stake: nat;
+   stake: StakeRecord;
  };
 type SubscriptionRecord = 
  record {
@@ -89,6 +89,8 @@ type Stats__1 =
    drainEventId: opt ActionId__1;
    error: opt text;
    eventsProcessing: bool;
+   icrc72OrchestratorCanister: principal;
+   icrc72Subscriber: Stats__2;
    orchestrator: principal;
    pendingEvents: vec EmitableEvent;
    previousEventIds: vec record {
@@ -103,7 +105,6 @@ type Stats__1 =
                        PublicationRecord;
                      };
    readyForPublications: bool;
-   subscriber: Stats__2;
    tt: Stats__3;
  };
 type Stats = 
@@ -153,6 +154,12 @@ type Stats =
                       };
    tt: Stats__3;
  };
+type StakeRecord = 
+ record {
+   "principal": opt principal;
+   stake: nat;
+   timestamp: nat;
+ };
 type PublishResult = 
  variant {
    Err: PublishError;
@@ -178,11 +185,8 @@ type PublicationRecordShared =
                                 SubscriberRecordShared;
                               };
    stakeIndex: vec record {
-                     nat;
-                     vec record {
-                           nat;
-                           principal;
-                         };
+                     StakeRecord;
+                     principal;
                    };
    subnetIndex: vec record {
                       principal;
@@ -197,6 +201,11 @@ type PublicationRecord =
 type Namespace = text;
 type MVEvent = 
  service {
+   getHandledNotifications: () ->
+    (vec record {
+           EventNotificationRecordShared__1;
+           EventRecordShared__1;
+         }) query;
    get_stats: () -> (Stats) query;
    get_subnet_for_canister: () ->
     (variant {
@@ -207,6 +216,7 @@ type MVEvent =
    icrc72_confirm_notifications: (vec nat) -> (ConfirmMessageResult);
    icrc72_handle_notification: (vec EventNotification) -> () oneway;
    icrc72_publish: (vec Event) -> (vec opt PublishResult);
+   initialize: () -> ();
    simulatePublish: (nat, text, nat, principal) -> (vec opt PublishResult);
    simulatePublisherAssignment: (text, nat, principal) -> ();
    simulatePublisherRemoval: (text, nat, principal) -> ();
@@ -465,6 +475,13 @@ type Event__1 =
    source: principal;
    timestamp: nat;
  };
+type EventRecordShared__1 = 
+ record {
+   event: Event__1;
+   notificationQueue: vec nat;
+   notifications: vec nat;
+   relayQueue: vec principal;
+ };
 type EventRecordShared = 
  record {
    event: Event__1;
@@ -496,6 +513,19 @@ type EventNotification__1 =
    source: principal;
    timestamp: nat;
  };
+type EventNotificationRecordShared__1 = 
+ record {
+   bConfirmed: opt nat;
+   bSent: opt nat;
+   destination: principal;
+   eventId: nat;
+   filter: opt text;
+   headers: opt ICRC16Map__3;
+   id: nat;
+   publication: text;
+   stake: StakeRecord;
+   timerId: opt nat;
+ };
 type EventNotificationRecordShared = 
  record {
    bConfirmed: opt nat;
@@ -506,7 +536,7 @@ type EventNotificationRecordShared =
    headers: opt ICRC16Map__3;
    id: nat;
    publication: text;
-   stake: nat;
+   stake: StakeRecord;
    timerId: opt nat;
  };
 type EventNotification = 

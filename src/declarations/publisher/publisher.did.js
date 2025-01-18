@@ -389,6 +389,11 @@ export const idlFactory = ({ IDL }) => {
         [PublicationDeleteResult],
         [],
       ),
+    'simulatePublicationCreation' : IDL.Func(
+        [],
+        [IDL.Vec(PublicationRegisterResult)],
+        [],
+      ),
     'simulatePublish' : IDL.Func(
         [IDL.Vec(NewEvent)],
         [IDL.Vec(IDL.Opt(IDL.Nat))],

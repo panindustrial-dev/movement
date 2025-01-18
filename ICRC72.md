@@ -660,7 +660,7 @@ type SubscriptionRegisterResult = opt variant {
   Err: SubscriptionRegisterError;
 };
 
-type UpdatePublicationResult = opt variant {
+type PublicationUpdateResult = opt variant {
   Ok: bool;
   Err: PublicationRegisterError;
 };

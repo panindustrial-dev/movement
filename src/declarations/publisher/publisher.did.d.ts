@@ -270,6 +270,10 @@ export interface Publisher {
   'simulateBroadcastRemoval' : ActorMethod<[string, Principal], undefined>,
   'simulateBroadcastRemovalEvent' : ActorMethod<[string, Principal], undefined>,
   'simulateDeletePublication' : ActorMethod<[string], PublicationDeleteResult>,
+  'simulatePublicationCreation' : ActorMethod<
+    [],
+    Array<PublicationRegisterResult>
+  >,
   'simulatePublish' : ActorMethod<[Array<NewEvent>], Array<[] | [bigint]>>,
   'simulatePublishAsync' : ActorMethod<[Array<NewEvent>], Array<[] | [bigint]>>,
   'simulatePublishWithHandler' : ActorMethod<
