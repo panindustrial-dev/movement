@@ -149,6 +149,7 @@ shared (deployer) actor class MVEvent<system>(args: ?{
           tt = tt();
           handleEventOrder = null;
           handleNotificationError = null;
+          handleNotificationPrice = null;
         };
       });
 
@@ -201,21 +202,22 @@ shared (deployer) actor class MVEvent<system>(args: ?{
       args = icrc72BroadcasterInitArgs;
       pullEnvironment = ?(func() : ICRC72Broadcaster.Environment{
         {      
-          add_record = null;
+          var add_record = null;
           tt = tt();
           icrc72Subscriber = icrc72_subscriber();
           icrc72Publisher  = icrc72_publisher();
-          publicationSearch  = null;
-          subscriptionSearch = null;
-          subscriptionFilter = null;
-          publishReturnFunction = null;
-          handleConfirmation = null;
-          handleEventFinalized = null;
-          handleBroadcasterListening = null; //State, Environment, Namespace, Principal, Listening = True; Resigning = False
-          handleBroadcasterPublishing = null; //State, Environment, Namespace, Principal, Listening = True; Resigning = False
-          roundDelay = null;
-          maxMessages = null;
-          icrc72OrchestratorCanister = thisPrincipal;
+          var publicationSearch  = null;
+          var subscriptionSearch = null;
+          var subscriptionFilter = null;
+          var publishReturnFunction = null;
+          var handleConfirmation = null;
+          var handleEventFinalized = null;
+          var handleBroadcasterListening = null; //State, Environment, Namespace, Principal, Listening = True; Resigning = False
+          var handleBroadcasterPublishing = null; //State, Environment, Namespace, Principal, Listening = True; Resigning = False
+          var roundDelay = null;
+          var maxMessages = null;
+          var icrc72OrchestratorCanister = thisPrincipal;
+          var willPublish = null;
         };
       });
 

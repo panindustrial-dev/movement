@@ -39,13 +39,13 @@ export const idlFactory = ({ IDL }) => {
   );
   const ICRC16Map = IDL.Vec(IDL.Tuple(IDL.Text, ICRC16));
   const EmitableEvent = IDL.Record({
-    'id' : IDL.Nat,
+    'eventId' : IDL.Nat,
     'broadcaster' : IDL.Principal,
     'source' : IDL.Principal,
     'data' : ICRC16,
     'headers' : IDL.Opt(ICRC16Map),
+    'prevEventId' : IDL.Opt(IDL.Nat),
     'timestamp' : IDL.Nat,
-    'prevId' : IDL.Opt(IDL.Nat),
     'namespace' : IDL.Text,
   });
   const InitArgs__1 = IDL.Record({
@@ -119,7 +119,6 @@ export const idlFactory = ({ IDL }) => {
     'timestamp' : IDL.Nat,
   });
   const EventNotificationRecordShared__1 = IDL.Record({
-    'id' : IDL.Nat,
     'bConfirmed' : IDL.Opt(IDL.Nat),
     'eventId' : IDL.Nat,
     'destination' : IDL.Principal,
@@ -127,16 +126,17 @@ export const idlFactory = ({ IDL }) => {
     'stake' : StakeRecord,
     'filter' : IDL.Opt(IDL.Text),
     'bSent' : IDL.Opt(IDL.Nat),
+    'notificationId' : IDL.Nat,
     'timerId' : IDL.Opt(IDL.Nat),
     'publication' : IDL.Text,
   });
   const Event__1 = IDL.Record({
-    'id' : IDL.Nat,
+    'eventId' : IDL.Nat,
     'source' : IDL.Principal,
     'data' : ICRC16__3,
     'headers' : IDL.Opt(ICRC16Map__3),
+    'prevEventId' : IDL.Opt(IDL.Nat),
     'timestamp' : IDL.Nat,
-    'prevId' : IDL.Opt(IDL.Nat),
     'namespace' : IDL.Text,
   });
   const EventRecordShared__1 = IDL.Record({
@@ -144,6 +144,94 @@ export const idlFactory = ({ IDL }) => {
     'notifications' : IDL.Vec(IDL.Nat),
     'notificationQueue' : IDL.Vec(IDL.Nat),
     'event' : Event__1,
+  });
+  const ICRC16Map__1 = IDL.Vec(IDL.Tuple(IDL.Text, ICRC16__1));
+  const ICRC16Property__1 = IDL.Record({
+    'value' : ICRC16__1,
+    'name' : IDL.Text,
+    'immutable' : IDL.Bool,
+  });
+  ICRC16__1.fill(
+    IDL.Variant({
+      'Int' : IDL.Int,
+      'Map' : ICRC16Map__1,
+      'Nat' : IDL.Nat,
+      'Set' : IDL.Vec(ICRC16__1),
+      'Nat16' : IDL.Nat16,
+      'Nat32' : IDL.Nat32,
+      'Nat64' : IDL.Nat64,
+      'Blob' : IDL.Vec(IDL.Nat8),
+      'Bool' : IDL.Bool,
+      'Int8' : IDL.Int8,
+      'Nat8' : IDL.Nat8,
+      'Nats' : IDL.Vec(IDL.Nat),
+      'Text' : IDL.Text,
+      'Bytes' : IDL.Vec(IDL.Nat8),
+      'Int16' : IDL.Int16,
+      'Int32' : IDL.Int32,
+      'Int64' : IDL.Int64,
+      'Option' : IDL.Opt(ICRC16__1),
+      'Floats' : IDL.Vec(IDL.Float64),
+      'Float' : IDL.Float64,
+      'Principal' : IDL.Principal,
+      'Array' : IDL.Vec(ICRC16__1),
+      'ValueMap' : IDL.Vec(IDL.Tuple(ICRC16__1, ICRC16__1)),
+      'Class' : IDL.Vec(ICRC16Property__1),
+    })
+  );
+  const Event = IDL.Record({
+    'eventId' : IDL.Nat,
+    'source' : IDL.Principal,
+    'data' : ICRC16__1,
+    'headers' : IDL.Opt(ICRC16Map__1),
+    'prevEventId' : IDL.Opt(IDL.Nat),
+    'timestamp' : IDL.Nat,
+    'namespace' : IDL.Text,
+  });
+  const ICRC16Map__2 = IDL.Vec(IDL.Tuple(IDL.Text, ICRC16__2));
+  const ICRC16Property__2 = IDL.Record({
+    'value' : ICRC16__2,
+    'name' : IDL.Text,
+    'immutable' : IDL.Bool,
+  });
+  ICRC16__2.fill(
+    IDL.Variant({
+      'Int' : IDL.Int,
+      'Map' : ICRC16Map__2,
+      'Nat' : IDL.Nat,
+      'Set' : IDL.Vec(ICRC16__2),
+      'Nat16' : IDL.Nat16,
+      'Nat32' : IDL.Nat32,
+      'Nat64' : IDL.Nat64,
+      'Blob' : IDL.Vec(IDL.Nat8),
+      'Bool' : IDL.Bool,
+      'Int8' : IDL.Int8,
+      'Nat8' : IDL.Nat8,
+      'Nats' : IDL.Vec(IDL.Nat),
+      'Text' : IDL.Text,
+      'Bytes' : IDL.Vec(IDL.Nat8),
+      'Int16' : IDL.Int16,
+      'Int32' : IDL.Int32,
+      'Int64' : IDL.Int64,
+      'Option' : IDL.Opt(ICRC16__2),
+      'Floats' : IDL.Vec(IDL.Float64),
+      'Float' : IDL.Float64,
+      'Principal' : IDL.Principal,
+      'Array' : IDL.Vec(ICRC16__2),
+      'ValueMap' : IDL.Vec(IDL.Tuple(ICRC16__2, ICRC16__2)),
+      'Class' : IDL.Vec(ICRC16Property__2),
+    })
+  );
+  const EventNotification = IDL.Record({
+    'eventId' : IDL.Nat,
+    'source' : IDL.Principal,
+    'data' : ICRC16__2,
+    'headers' : IDL.Opt(ICRC16Map__2),
+    'prevEventId' : IDL.Opt(IDL.Nat),
+    'filter' : IDL.Opt(IDL.Text),
+    'timestamp' : IDL.Nat,
+    'notificationId' : IDL.Nat,
+    'namespace' : IDL.Text,
   });
   const ActionDetail = IDL.Tuple(ActionId, Action);
   const TimerId = IDL.Nat;
@@ -203,7 +291,6 @@ export const idlFactory = ({ IDL }) => {
     'namespace' : IDL.Text,
   });
   const EventNotification__1 = IDL.Record({
-    'id' : IDL.Nat,
     'eventId' : IDL.Nat,
     'source' : IDL.Principal,
     'data' : ICRC16__4,
@@ -211,6 +298,7 @@ export const idlFactory = ({ IDL }) => {
     'prevEventId' : IDL.Opt(IDL.Nat),
     'filter' : IDL.Opt(IDL.Text),
     'timestamp' : IDL.Nat,
+    'notificationId' : IDL.Nat,
     'namespace' : IDL.Text,
   });
   const Namespace = IDL.Text;
@@ -231,7 +319,9 @@ export const idlFactory = ({ IDL }) => {
     }),
     'confirmTimer' : IDL.Opt(IDL.Nat),
     'error' : IDL.Opt(IDL.Text),
-    'confirmAccumulator' : IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Vec(IDL.Nat))),
+    'confirmAccumulator' : IDL.Vec(
+      IDL.Tuple(IDL.Principal, IDL.Vec(IDL.Tuple(IDL.Nat, IDL.Nat)))
+    ),
     'broadcasters' : IDL.Vec(IDL.Tuple(IDL.Nat, IDL.Vec(IDL.Principal))),
     'lastEventId' : IDL.Vec(
       IDL.Tuple(IDL.Text, IDL.Vec(IDL.Tuple(IDL.Nat, IDL.Nat)))
@@ -268,7 +358,6 @@ export const idlFactory = ({ IDL }) => {
     'namespace' : IDL.Text,
   });
   const EventNotification__2 = IDL.Record({
-    'id' : IDL.Nat,
     'eventId' : IDL.Nat,
     'source' : IDL.Principal,
     'data' : ICRC16__3,
@@ -276,10 +365,10 @@ export const idlFactory = ({ IDL }) => {
     'prevEventId' : IDL.Opt(IDL.Nat),
     'filter' : IDL.Opt(IDL.Text),
     'timestamp' : IDL.Nat,
+    'notificationId' : IDL.Nat,
     'namespace' : IDL.Text,
   });
   const EventNotificationRecordShared = IDL.Record({
-    'id' : IDL.Nat,
     'bConfirmed' : IDL.Opt(IDL.Nat),
     'eventId' : IDL.Nat,
     'destination' : IDL.Principal,
@@ -287,10 +376,12 @@ export const idlFactory = ({ IDL }) => {
     'stake' : StakeRecord,
     'filter' : IDL.Opt(IDL.Text),
     'bSent' : IDL.Opt(IDL.Nat),
+    'notificationId' : IDL.Nat,
     'timerId' : IDL.Opt(IDL.Nat),
     'publication' : IDL.Text,
   });
   const SubscriberRecordShared = IDL.Record({
+    'skipTracker' : IDL.Int,
     'skip' : IDL.Opt(IDL.Tuple(IDL.Nat, IDL.Nat)),
     'subscriptionId' : IDL.Nat,
     'filter' : IDL.Opt(IDL.Text),
@@ -311,6 +402,7 @@ export const idlFactory = ({ IDL }) => {
       IDL.Tuple(IDL.Principal, IDL.Opt(IDL.Vec(IDL.Text)))
     ),
     'namespace' : IDL.Text,
+    'registeredRelayer' : IDL.Vec(IDL.Principal),
   });
   const Stats = IDL.Record({
     'tt' : Stats__3,
@@ -353,94 +445,6 @@ export const idlFactory = ({ IDL }) => {
     'allAccepted' : IDL.Null,
     'itemized' : IDL.Vec(ConfirmMessageItemResult),
   });
-  const ICRC16Map__2 = IDL.Vec(IDL.Tuple(IDL.Text, ICRC16__2));
-  const ICRC16Property__2 = IDL.Record({
-    'value' : ICRC16__2,
-    'name' : IDL.Text,
-    'immutable' : IDL.Bool,
-  });
-  ICRC16__2.fill(
-    IDL.Variant({
-      'Int' : IDL.Int,
-      'Map' : ICRC16Map__2,
-      'Nat' : IDL.Nat,
-      'Set' : IDL.Vec(ICRC16__2),
-      'Nat16' : IDL.Nat16,
-      'Nat32' : IDL.Nat32,
-      'Nat64' : IDL.Nat64,
-      'Blob' : IDL.Vec(IDL.Nat8),
-      'Bool' : IDL.Bool,
-      'Int8' : IDL.Int8,
-      'Nat8' : IDL.Nat8,
-      'Nats' : IDL.Vec(IDL.Nat),
-      'Text' : IDL.Text,
-      'Bytes' : IDL.Vec(IDL.Nat8),
-      'Int16' : IDL.Int16,
-      'Int32' : IDL.Int32,
-      'Int64' : IDL.Int64,
-      'Option' : IDL.Opt(ICRC16__2),
-      'Floats' : IDL.Vec(IDL.Float64),
-      'Float' : IDL.Float64,
-      'Principal' : IDL.Principal,
-      'Array' : IDL.Vec(ICRC16__2),
-      'ValueMap' : IDL.Vec(IDL.Tuple(ICRC16__2, ICRC16__2)),
-      'Class' : IDL.Vec(ICRC16Property__2),
-    })
-  );
-  const EventNotification = IDL.Record({
-    'id' : IDL.Nat,
-    'eventId' : IDL.Nat,
-    'source' : IDL.Principal,
-    'data' : ICRC16__2,
-    'headers' : IDL.Opt(ICRC16Map__2),
-    'prevEventId' : IDL.Opt(IDL.Nat),
-    'filter' : IDL.Opt(IDL.Text),
-    'timestamp' : IDL.Nat,
-    'namespace' : IDL.Text,
-  });
-  const ICRC16Map__1 = IDL.Vec(IDL.Tuple(IDL.Text, ICRC16__1));
-  const ICRC16Property__1 = IDL.Record({
-    'value' : ICRC16__1,
-    'name' : IDL.Text,
-    'immutable' : IDL.Bool,
-  });
-  ICRC16__1.fill(
-    IDL.Variant({
-      'Int' : IDL.Int,
-      'Map' : ICRC16Map__1,
-      'Nat' : IDL.Nat,
-      'Set' : IDL.Vec(ICRC16__1),
-      'Nat16' : IDL.Nat16,
-      'Nat32' : IDL.Nat32,
-      'Nat64' : IDL.Nat64,
-      'Blob' : IDL.Vec(IDL.Nat8),
-      'Bool' : IDL.Bool,
-      'Int8' : IDL.Int8,
-      'Nat8' : IDL.Nat8,
-      'Nats' : IDL.Vec(IDL.Nat),
-      'Text' : IDL.Text,
-      'Bytes' : IDL.Vec(IDL.Nat8),
-      'Int16' : IDL.Int16,
-      'Int32' : IDL.Int32,
-      'Int64' : IDL.Int64,
-      'Option' : IDL.Opt(ICRC16__1),
-      'Floats' : IDL.Vec(IDL.Float64),
-      'Float' : IDL.Float64,
-      'Principal' : IDL.Principal,
-      'Array' : IDL.Vec(ICRC16__1),
-      'ValueMap' : IDL.Vec(IDL.Tuple(ICRC16__1, ICRC16__1)),
-      'Class' : IDL.Vec(ICRC16Property__1),
-    })
-  );
-  const Event = IDL.Record({
-    'id' : IDL.Nat,
-    'source' : IDL.Principal,
-    'data' : ICRC16__1,
-    'headers' : IDL.Opt(ICRC16Map__1),
-    'timestamp' : IDL.Nat,
-    'prevId' : IDL.Opt(IDL.Nat),
-    'namespace' : IDL.Text,
-  });
   const PublishError = IDL.Variant({
     'GenericError' : GenericError,
     'PublicationNotFound' : IDL.Null,
@@ -458,6 +462,21 @@ export const idlFactory = ({ IDL }) => {
             IDL.Tuple(EventNotificationRecordShared__1, EventRecordShared__1)
           ),
         ],
+        ['query'],
+      ),
+    'getReceivedPublishes' : IDL.Func(
+        [],
+        [IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Vec(Event)))],
+        ['query'],
+      ),
+    'getRecievedConfirmations' : IDL.Func(
+        [],
+        [IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Vec(IDL.Nat)))],
+        ['query'],
+      ),
+    'getRecievedNotifications' : IDL.Func(
+        [],
+        [IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Vec(EventNotification)))],
         ['query'],
       ),
     'get_stats' : IDL.Func([], [Stats], ['query']),
@@ -563,13 +582,13 @@ export const init = ({ IDL }) => {
   );
   const ICRC16Map = IDL.Vec(IDL.Tuple(IDL.Text, ICRC16));
   const EmitableEvent = IDL.Record({
-    'id' : IDL.Nat,
+    'eventId' : IDL.Nat,
     'broadcaster' : IDL.Principal,
     'source' : IDL.Principal,
     'data' : ICRC16,
     'headers' : IDL.Opt(ICRC16Map),
+    'prevEventId' : IDL.Opt(IDL.Nat),
     'timestamp' : IDL.Nat,
-    'prevId' : IDL.Opt(IDL.Nat),
     'namespace' : IDL.Text,
   });
   const InitArgs__1 = IDL.Record({

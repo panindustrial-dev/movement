@@ -39,13 +39,13 @@ export const idlFactory = ({ IDL }) => {
   );
   const ICRC16Map = IDL.Vec(IDL.Tuple(IDL.Text, ICRC16));
   const EmitableEvent = IDL.Record({
-    'id' : IDL.Nat,
+    'eventId' : IDL.Nat,
     'broadcaster' : IDL.Principal,
     'source' : IDL.Principal,
     'data' : ICRC16,
     'headers' : IDL.Opt(ICRC16Map),
+    'prevEventId' : IDL.Opt(IDL.Nat),
     'timestamp' : IDL.Nat,
-    'prevId' : IDL.Opt(IDL.Nat),
     'namespace' : IDL.Text,
   });
   const InitArgs__1 = IDL.Record({
@@ -131,7 +131,6 @@ export const idlFactory = ({ IDL }) => {
     'namespace' : IDL.Text,
   });
   const EventNotification__1 = IDL.Record({
-    'id' : IDL.Nat,
     'eventId' : IDL.Nat,
     'source' : IDL.Principal,
     'data' : ICRC16__3,
@@ -139,6 +138,7 @@ export const idlFactory = ({ IDL }) => {
     'prevEventId' : IDL.Opt(IDL.Nat),
     'filter' : IDL.Opt(IDL.Text),
     'timestamp' : IDL.Nat,
+    'notificationId' : IDL.Nat,
     'namespace' : IDL.Text,
   });
   const Namespace__1 = IDL.Text;
@@ -159,7 +159,9 @@ export const idlFactory = ({ IDL }) => {
     }),
     'confirmTimer' : IDL.Opt(IDL.Nat),
     'error' : IDL.Opt(IDL.Text),
-    'confirmAccumulator' : IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Vec(IDL.Nat))),
+    'confirmAccumulator' : IDL.Vec(
+      IDL.Tuple(IDL.Principal, IDL.Vec(IDL.Tuple(IDL.Nat, IDL.Nat)))
+    ),
     'broadcasters' : IDL.Vec(IDL.Tuple(IDL.Nat, IDL.Vec(IDL.Principal))),
     'lastEventId' : IDL.Vec(
       IDL.Tuple(IDL.Text, IDL.Vec(IDL.Tuple(IDL.Nat, IDL.Nat)))
@@ -465,7 +467,6 @@ export const idlFactory = ({ IDL }) => {
     })
   );
   const EventNotification = IDL.Record({
-    'id' : IDL.Nat,
     'eventId' : IDL.Nat,
     'source' : IDL.Principal,
     'data' : ICRC16__2,
@@ -473,6 +474,7 @@ export const idlFactory = ({ IDL }) => {
     'prevEventId' : IDL.Opt(IDL.Nat),
     'filter' : IDL.Opt(IDL.Text),
     'timestamp' : IDL.Nat,
+    'notificationId' : IDL.Nat,
     'namespace' : IDL.Text,
   });
   const PublicationRegistration = IDL.Record({
@@ -649,6 +651,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(SubscriptionUpdateResult)],
         [],
       ),
+    'initialize' : IDL.Func([], [], []),
   });
   return MVEvent;
 };
@@ -689,13 +692,13 @@ export const init = ({ IDL }) => {
   );
   const ICRC16Map = IDL.Vec(IDL.Tuple(IDL.Text, ICRC16));
   const EmitableEvent = IDL.Record({
-    'id' : IDL.Nat,
+    'eventId' : IDL.Nat,
     'broadcaster' : IDL.Principal,
     'source' : IDL.Principal,
     'data' : ICRC16,
     'headers' : IDL.Opt(ICRC16Map),
+    'prevEventId' : IDL.Opt(IDL.Nat),
     'timestamp' : IDL.Nat,
-    'prevId' : IDL.Opt(IDL.Nat),
     'namespace' : IDL.Text,
   });
   const InitArgs__1 = IDL.Record({

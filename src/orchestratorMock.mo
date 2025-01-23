@@ -105,6 +105,17 @@ shared (deployer) actor class OrchestratorMock<system>()  = this {
     return #Ok({subnet_id = ?Principal.fromActor(this)});
   };
 
+  public shared(msg) func simulateBroadcasterReady(orchestrator: Principal) : async () {
+    let service: actor {
+      broadcaster_ready() : async ();
+    } = actor(Principal.toText(orchestrator));
+
+    await service.broadcaster_ready();
+
+
+    return;
+  };
+
   var publicationUpdates = Vector.new<[ICRC72OrchestratorService.PublicationUpdateRequest]>();  
 
   public query(msg) func getPublicationUpdates() : async [[ICRC72OrchestratorService.PublicationUpdateRequest]] {
@@ -436,5 +447,9 @@ shared (deployer) actor class OrchestratorMock<system>()  = this {
         stats = [];
       }
     ]
+  };
+
+  public shared(msg) func broadcaster_ready() : async () {
+    return;
   };
 };

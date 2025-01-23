@@ -158,6 +158,7 @@ type PublicationDeleteError =
  };
 type OrchestratorMock = 
  service {
+   broadcaster_ready: () -> ();
    getConfirmNotices: () -> (vec vec nat) query;
    getPublicationDeletes: () -> (vec vec PublicationDeleteRequest) query;
    getPublicationUpdates: () -> (vec vec PublicationUpdateRequest) query;
@@ -214,6 +215,7 @@ type OrchestratorMock =
    icrc72_update_subscription: (vec SubscriptionUpdateRequest) ->
     (vec SubscriptionUpdateResult);
    set_scenario: (text) -> () oneway;
+   simulateBroadcasterReady: (principal) -> ();
  };
 type OrchestrationQuerySlice = 
  variant {
@@ -372,8 +374,8 @@ type EventNotification =
    eventId: nat;
    filter: opt text;
    headers: opt ICRC16Map__2;
-   id: nat;
    namespace: text;
+   notificationId: nat;
    prevEventId: opt nat;
    source: principal;
    timestamp: nat;
@@ -381,10 +383,10 @@ type EventNotification =
 type Event = 
  record {
    data: ICRC16__1;
+   eventId: nat;
    headers: opt ICRC16Map__1;
-   id: nat;
    namespace: text;
-   prevId: opt nat;
+   prevEventId: opt nat;
    source: principal;
    timestamp: nat;
  };

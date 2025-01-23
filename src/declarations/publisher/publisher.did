@@ -32,7 +32,10 @@ type Stats__1 =
                      };
    confirmAccumulator: vec record {
                              principal;
-                             vec nat;
+                             vec record {
+                                   nat;
+                                   nat;
+                                 };
                            };
    confirmTimer: opt nat;
    error: opt text;
@@ -402,8 +405,8 @@ type EventNotification__1 =
    eventId: nat;
    filter: opt text;
    headers: opt ICRC16Map__3;
-   id: nat;
    namespace: text;
+   notificationId: nat;
    prevEventId: opt nat;
    source: principal;
    timestamp: nat;
@@ -414,8 +417,8 @@ type EventNotification =
    eventId: nat;
    filter: opt text;
    headers: opt ICRC16Map__2;
-   id: nat;
    namespace: text;
+   notificationId: nat;
    prevEventId: opt nat;
    source: principal;
    timestamp: nat;
@@ -424,10 +427,10 @@ type EmitableEvent =
  record {
    broadcaster: principal;
    data: ICRC16;
+   eventId: nat;
    headers: opt ICRC16Map;
-   id: nat;
    namespace: text;
-   prevId: opt nat;
+   prevEventId: opt nat;
    source: principal;
    timestamp: nat;
  };

@@ -9,6 +9,7 @@ import ICRC72Publisher "../../icrc72-publisher.mo/src/";
 import ClassPlus "../../../../ICDevs/projects/ClassPlus/src/";
 
 
+import Blob "mo:base/Blob";
 import D "mo:base/Debug";
 import Principal "mo:base/Principal";
 import Timer "mo:base/Timer";
@@ -150,11 +151,14 @@ shared (deployer) actor class Subscriber<system>(args: ?{
       args = icrc72SubscriberInitArgs;
       pullEnvironment = ?(func() : ICRC72Subscriber.Environment{
         {      
-          addRecord = ?addRecord;
-          icrc72OrchestratorCanister = orchestratorPrincipal;
+          var addRecord = ?addRecord;
+          var icrc72OrchestratorCanister = orchestratorPrincipal;
           tt = tt();
-          handleEventOrder = ?handleEventOrder;
-          handleNotificationError = ?(func<system>(event: ICRC72Subscriber.EventNotification, error: Error) : () {
+          var handleEventOrder = ?handleEventOrder;
+          var handleNotificationPrice = ?(func<system>(state: ICRC72Subscriber.CurrentState, environment: ICRC72Subscriber.Environment, eventNotification: ICRC72Subscriber.EventNotification) : Nat {
+            return 0;
+          }); 
+          var handleNotificationError = ?(func<system>(event: ICRC72Subscriber.EventNotification, error: Error) : () {
             D.print("Error in Notification: " # debug_show(event) # " " # Error.message(error));
 
             Vector.add(errors, Error.message(error));
@@ -275,15 +279,29 @@ shared (deployer) actor class Subscriber<system>(args: ?{
   var counter : Nat = 0;
 
   func processCounterEvent<system>(event: ICRC72Subscriber.EventNotification) : (){
-    debug if(debug_channel.announce) D.print("CANISTER: Received notification: " # debug_show(event));
-    
-    counter += 1;
+    debug if(debug_channel.announce) D.print("CANISTER: Received notification: " # debug_show((thisCanister, event)));
+    let #Class(val) = event.data else {
+      debug if(debug_channel.announce) D.print("CANISTER: Received notification: " # debug_show((thisCanister, event)));
+      return;
+    };
+    let #Nat(count) = val[0].value else {
+      debug if(debug_channel.announce) D.print("CANISTER: Received notification: " # debug_show((thisCanister, event)));
+      return;
+    };
+    counter += count;
   };
 
   func processCounterEventAsync<system>(event: ICRC72Subscriber.EventNotification) : async* (){
-    debug if(debug_channel.announce) D.print("CANISTER: Received notification: " # debug_show(event));
-    
-    counter += 1;
+    debug if(debug_channel.announce) D.print("CANISTER: Received notification: " # debug_show((thisCanister, event)));
+    let #Class(val) = event.data else {
+      debug if(debug_channel.announce) D.print("CANISTER: Received notification: " # debug_show((thisCanister, event)));
+      return;
+    };
+    let #Nat(count) = val[0].value else {
+      debug if(debug_channel.announce) D.print("CANISTER: Received notification: " # debug_show((thisCanister, event)));
+      return;
+    };
+    counter += count;
   };
 
   public query(msg) func getCounter() : async Nat {
@@ -315,6 +333,8 @@ shared (deployer) actor class Subscriber<system>(args: ?{
   };
 
   public shared(msg) func simulateSubscriptionCreation(sync: Bool, namespace: Text, config : ?ICRC72Subscriber.ICRC16Map) : async [ICRC72OrchestratorService.SubscriptionRegisterResult] {
+
+    debug if(debug_channel.announce) D.print("CANISTER: simulateSubscriptionCreation: " # debug_show(sync, namespace, config));
     if(sync){
       return await* icrc72_subscriber().subscribe([{
         namespace = namespace;
@@ -337,7 +357,6 @@ shared (deployer) actor class Subscriber<system>(args: ?{
       }]);
     }
   };
-
 
 
 };

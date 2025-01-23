@@ -23,17 +23,16 @@ export interface ArgList {
 }
 export type Args = [] | [ArgList];
 export interface EmitableEvent {
-  'id' : bigint,
+  'eventId' : bigint,
   'broadcaster' : Principal,
   'source' : Principal,
   'data' : ICRC16,
   'headers' : [] | [ICRC16Map],
+  'prevEventId' : [] | [bigint],
   'timestamp' : bigint,
-  'prevId' : [] | [bigint],
   'namespace' : string,
 }
 export interface EventNotification {
-  'id' : bigint,
   'eventId' : bigint,
   'source' : Principal,
   'data' : ICRC16__2,
@@ -41,10 +40,10 @@ export interface EventNotification {
   'prevEventId' : [] | [bigint],
   'filter' : [] | [string],
   'timestamp' : bigint,
+  'notificationId' : bigint,
   'namespace' : string,
 }
 export interface EventNotification__1 {
-  'id' : bigint,
   'eventId' : bigint,
   'source' : Principal,
   'data' : ICRC16__3,
@@ -52,6 +51,7 @@ export interface EventNotification__1 {
   'prevEventId' : [] | [bigint],
   'filter' : [] | [string],
   'timestamp' : bigint,
+  'notificationId' : bigint,
   'namespace' : string,
 }
 export interface GenericError { 'message' : string, 'error_code' : bigint }
@@ -308,7 +308,7 @@ export interface Stats__1 {
     { 'icrc75' : ICRC75Item },
   'confirmTimer' : [] | [bigint],
   'error' : [] | [string],
-  'confirmAccumulator' : Array<[Principal, Array<bigint>]>,
+  'confirmAccumulator' : Array<[Principal, Array<[bigint, bigint]>]>,
   'broadcasters' : Array<[bigint, Array<Principal>]>,
   'lastEventId' : Array<[string, Array<[bigint, bigint]>]>,
   'icrc72OrchestratorCanister' : Principal,

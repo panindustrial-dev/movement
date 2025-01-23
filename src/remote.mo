@@ -238,12 +238,13 @@ shared (deployer) actor class MVEvent<system>(args: ?{
       args = icrc72SubscriberInitArgs;
       pullEnvironment = ?(func() : ICRC72Subscriber.Environment{
         {      
-          addRecord = null;
+          var addRecord = null;
           generateId = null;
-          icrc72OrchestratorCanister = getOrchestrator();
+          var icrc72OrchestratorCanister = getOrchestrator();
           tt = tt();
-          handleEventOrder = null;
-          handleNotificationError = null;
+          var handleEventOrder = null;
+          var handleNotificationError = null;
+          var handleNotificationPrice = null;
         };
       });
 
@@ -267,12 +268,12 @@ shared (deployer) actor class MVEvent<system>(args: ?{
       args = icrc72PublisherInitArgs;
       pullEnvironment = ?(func() : ICRC72Publisher.Environment{
         {      
-          addRecord = null;
-          generateId = null;
-          icrc72Subscriber = icrc72_subscriber();
-          icrc72OrchestratorCanister = getOrchestrator();
-          onEventPublishError = null;
-          onEventPublished = null;
+          var addRecord = null;
+          var generateId = null;
+          var icrc72Subscriber = icrc72_subscriber();
+          var icrc72OrchestratorCanister = getOrchestrator();
+          var onEventPublishError = null;
+          var onEventPublished = null;
           tt = tt();
         };
       });

@@ -249,7 +249,7 @@ describe("test subscriber", () => {
       data: {Map: []},
       headers: [] as [],
       source: orchestrator_fixture.canisterId,
-      id: 1n,
+      notificationId: 1n,
       eventId: 1n,
       prevEventId: [] as [] | [bigint], 
       filter: [] as [] | [string],
@@ -301,7 +301,7 @@ describe("test subscriber", () => {
       data: {Map: []},
       headers: [] as [],
       source: orchestrator_fixture.canisterId,
-      id: 1n,
+      notificationId: 1n,
       eventId: 1n,
       prevEventId: [] as [] | [bigint], 
       filter: [] as [] | [string],
@@ -350,7 +350,7 @@ describe("test subscriber", () => {
         ] as ICRC16Map
       ],
       source: orchestrator_fixture.canisterId,
-      id: 1n,
+      notificationId: 1n,
       eventId: 1n,
       prevEventId: [] as [] | [bigint],
       filter: [] as [] | [string],
@@ -429,15 +429,16 @@ describe("test subscriber", () => {
 
     let stats = await subscriber_fixture.actor.get_stats();
 
-    console.log("stats",stats);
+    console.log("stats",stats.subscriptions );
     
     
+  
     // Assertions to ensure the updated configuration is reflected
-    expect(stats.subscriptions.length).toEqual(1);
-    expect(stats.subscriptions[0][0]).toEqual(777n); // Assuming subscriptionId=777 from the Orchestrator mock
-    expect(stats.subscriptions[0][1].namespace).toEqual(namespace);
+    expect(stats.subscriptions.length).toEqual(2);
+    expect(stats.subscriptions[1][0]).toEqual(780n); // Assuming subscriptionId=777 from the Orchestrator mock
+    expect(stats.subscriptions[1][1].namespace).toEqual(namespace);
 
-    let config = stats.subscriptions[0][1].config;
+    let config = stats.subscriptions[1][1].config;
     console.log("config",config);
 
     //i need to check that the config has a member of type [string, ICRC16] with "stopped" and #Text("false"); 
@@ -481,7 +482,7 @@ describe("test subscriber", () => {
       data: {Map: []},
       headers: [] as [],
       source: orchestrator_fixture.canisterId,
-      id: 1n,
+      notificationId: 1n,
       eventId: 1n,
       prevEventId: [] as [] | [bigint], 
       filter: [] as [] | [string],
@@ -534,7 +535,7 @@ describe("test subscriber", () => {
       data: {Map: []},
       headers: [] as [],
       source: orchestrator_fixture.canisterId,
-      id: 1n,
+      notificationId: 1n,
       eventId: 1n,
       prevEventId: [] as [] | [bigint], 
       filter: [] as [] | [string],
@@ -546,7 +547,7 @@ describe("test subscriber", () => {
       data: {Map: []},
       headers: [] as [],
       source: orchestrator_fixture.canisterId,
-      id: 2n,
+      notificationId: 2n,
       eventId: 2n,
       prevEventId: [] as [] | [bigint], 
       filter: [] as [] | [string],
@@ -558,7 +559,7 @@ describe("test subscriber", () => {
       data: {Map: []},
       headers: [] as [],
       source: orchestrator_fixture.canisterId,
-      id: 3n,
+      notificationId: 3n,
       eventId: 3n,
       prevEventId: [] as [] | [bigint], 
       filter: [] as [] | [string],
@@ -611,7 +612,7 @@ describe("test subscriber", () => {
         ] as ICRC16Map
       ] as [] | [ICRC16Map],
       source: orchestrator_fixture.canisterId,
-      id: 1n,
+      notificationId: 1n,
       eventId: 1n,
       prevEventId: [] as [] | [bigint], 
       filter: [] as [] | [string],
@@ -671,7 +672,7 @@ describe("test subscriber", () => {
         ] as ICRC16Map
       ] as [] | [ICRC16Map],
       source: orchestrator_fixture.canisterId,
-      id: 1n,
+      notificationId: 1n,
       eventId: 1n,
       prevEventId: [] as [] | [bigint], 
       filter: [] as [] | [string],
@@ -689,7 +690,7 @@ describe("test subscriber", () => {
 
     console.log("stateAfter", stateAfter.subscriptions);
     console.log("stateAfter", stateAfter.backlogs);
-    expect(stateAfter.subscriptions.length).toEqual(1);
+    expect(stateAfter.subscriptions.length).toEqual(2);
     expect(stateAfter.backlogs.length).toEqual(1);
     console.log("stateAfter backlog", stateAfter.backlogs[0]);
 
@@ -714,7 +715,7 @@ describe("test subscriber", () => {
       expect(subscriptionBacklog.length).toEqual(2);
     };
     if (subscriptionBacklog) {
-      expect(subscriptionBacklog[0]).toEqual(777n);
+      expect(subscriptionBacklog[0]).toEqual(778n);
     }
     if (subscriptionBacklog) {
       expect(subscriptionBacklog[1].length).toEqual(1);
@@ -753,7 +754,7 @@ describe("test subscriber", () => {
 
     console.log("stateAfter2", stateAfter2.subscriptions);
     console.log("stateAfter2", stateAfter2.backlogs);
-    expect(stateAfter.subscriptions.length).toEqual(1);
+    expect(stateAfter.subscriptions.length).toEqual(2);
 
     
 
@@ -794,7 +795,7 @@ describe("test subscriber", () => {
       data: {Map: []},
       headers: [] as [],
       source: orchestrator_fixture.canisterId,
-      id: 1n,
+      notificationId: 1n,
       eventId: 1n,
       prevEventId: [] as [] | [bigint], 
       filter: [] as [] | [string],
@@ -806,7 +807,7 @@ describe("test subscriber", () => {
       data: {Map: []},
       headers: [] as [],
       source: orchestrator_fixture.canisterId,
-      id: 2n,
+      notificationId: 2n,
       eventId: 2n,
       prevEventId: [] as [] | [bigint], 
       filter: [] as [] | [string],
@@ -818,7 +819,7 @@ describe("test subscriber", () => {
       data: {Map: []},
       headers: [] as [],
       source: orchestrator_fixture.canisterId,
-      id: 3n,
+      notificationId: 3n,
       eventId: 3n,
       prevEventId: [] as [] | [bigint], 
       filter: [] as [] | [string],

@@ -84,12 +84,12 @@ export const idlFactory = ({ IDL }) => {
     })
   );
   const Event = IDL.Record({
-    'id' : IDL.Nat,
+    'eventId' : IDL.Nat,
     'source' : IDL.Principal,
     'data' : ICRC16__1,
     'headers' : IDL.Opt(ICRC16Map__1),
+    'prevEventId' : IDL.Opt(IDL.Nat),
     'timestamp' : IDL.Nat,
-    'prevId' : IDL.Opt(IDL.Nat),
     'namespace' : IDL.Text,
   });
   const ICRC16Map__2 = IDL.Vec(IDL.Tuple(IDL.Text, ICRC16__2));
@@ -127,7 +127,6 @@ export const idlFactory = ({ IDL }) => {
     })
   );
   const EventNotification = IDL.Record({
-    'id' : IDL.Nat,
     'eventId' : IDL.Nat,
     'source' : IDL.Principal,
     'data' : ICRC16__2,
@@ -135,6 +134,7 @@ export const idlFactory = ({ IDL }) => {
     'prevEventId' : IDL.Opt(IDL.Nat),
     'filter' : IDL.Opt(IDL.Text),
     'timestamp' : IDL.Nat,
+    'notificationId' : IDL.Nat,
     'namespace' : IDL.Text,
   });
   const SubscriptionUpdateRequest = IDL.Record({
@@ -277,6 +277,7 @@ export const idlFactory = ({ IDL }) => {
     IDL.Variant({ 'Ok' : IDL.Bool, 'Err' : SubscriptionUpdateError })
   );
   const OrchestratorMock = IDL.Service({
+    'broadcaster_ready' : IDL.Func([], [], []),
     'getConfirmNotices' : IDL.Func([], [IDL.Vec(IDL.Vec(IDL.Nat))], ['query']),
     'getPublicationDeletes' : IDL.Func(
         [],
@@ -410,6 +411,7 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'set_scenario' : IDL.Func([IDL.Text], [], ['oneway']),
+    'simulateBroadcasterReady' : IDL.Func([IDL.Principal], [], []),
   });
   return OrchestratorMock;
 };

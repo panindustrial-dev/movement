@@ -39,6 +39,7 @@ import { register } from "module";
 import { SubscriptionUpdateRequest } from "../../src/declarations/example/example.did.js";
 import { subscriber } from "../../src/declarations/subscriber/index.js";
 import { orchestrator } from "../../src/declarations/orchestrator/index.js";
+import { debug } from "console";
 export const orchestrator_WASM_PATH = ".dfx/local/canisters/orchestrator/orchestrator.wasm.gz"; 
 export const mock_WASM_PATH = ".dfx/local/canisters/orchestratorMock/orchestratorMock.wasm.gz"; 
 
@@ -218,7 +219,7 @@ describe("test orchestrator subscriptions", () => {
     expect(result[0]).toBeDefined();
     console.log("result", JSON.stringify(result, dataItemStringify,2));
     if (result[0][0] && 'Ok' in result[0][0]) {
-      expect(result[0][0].Ok).toBeGreaterThan(0);
+      expect(result[0][0].Ok).toEqual(0n);
     } else {
       throw(`Expected Ok but got Err: ${JSON.stringify(result[0], dataItemStringify,2)}`);
     }
@@ -227,8 +228,8 @@ describe("test orchestrator subscriptions", () => {
     const stats = await orchestrator_fixture.actor.get_stats();
     expect(stats).toBeDefined();
     console.log("stats", JSON.stringify(stats, dataItemStringify,2));
-    expect(stats.subscriptions.length).toEqual(3);
-    expect(stats.subscriptions[2][1].namespace).toEqual("com.example.app.events");
+    expect(stats.subscriptions.length).toEqual(1);
+    expect(stats.subscriptions[0][1].namespace).toEqual("com.example.app.events");
 
     
   });
@@ -628,7 +629,7 @@ describe("test orchestrator subscriptions", () => {
     expect(publicationResult.length).toBe(1);
     expect(publicationResult[0]).toBeDefined();
     if (publicationResult[0][0] && 'Ok' in publicationResult[0][0]) {
-      expect(publicationResult[0][0].Ok).toBeGreaterThan(0);
+      expect(publicationResult[0][0].Ok).toEqual(0n);
     } else {
       throw(`Expected Ok but got Err: ${JSON.stringify(publicationResult[0], dataItemStringify, 2)}`);
     }
@@ -737,7 +738,7 @@ describe("test orchestrator subscriptions", () => {
     expect(publicationResult.length).toBe(1);
     expect(publicationResult[0]).toBeDefined();
     if (publicationResult[0][0] && 'Ok' in publicationResult[0][0]) {
-      expect(publicationResult[0][0].Ok).toEqual(1n);
+      expect(publicationResult[0][0].Ok).toEqual(0n);
     } else {
       throw(`Expected Ok but got Err: ${JSON.stringify(publicationResult[0], dataItemStringify, 2)}`);
     }
@@ -1113,9 +1114,27 @@ describe("test orchestrator subscriptions", () => {
   });
 
   // Broadcaster Retrieval Tests
-  it.only('should retrieve a list of valid broadcasters', async function testGetValidBroadcasters_Success() {
+  it('should retrieve a list of valid broadcasters', async function testGetValidBroadcasters_Success() {
     // Arrange: Set up Orchestrator with the default scenario
     await setUpOrchestrator("defaultOrchestrator");
+
+    await orchestrator_fixture.actor.file_subnet_broadcaster(mock_fixture.canisterId);
+
+    await orchestrator_fixture.actor.file_subnet_canister(orchestrator_fixture.canisterId, mock_fixture.canisterId);
+
+    await orchestrator_fixture.actor.file_subnet_canister(mock_fixture.canisterId, mock_fixture.canisterId);
+
+    
+    
+    await pic.tick(5);
+    await pic.advanceTime(60_000);
+    await pic.tick(5);
+
+    await mock_fixture.actor.simulateBroadcasterReady(orchestrator_fixture.canisterId);
+
+    await pic.tick(5);
+    await pic.advanceTime(60_000);
+    await pic.tick(5)
 
     // Allow any asynchronous operations to complete
     await pic.tick(5);
@@ -1123,6 +1142,8 @@ describe("test orchestrator subscriptions", () => {
 
     // Act: Call the icrc72_get_valid_broadcaster method
     const response = await orchestrator_fixture.actor.icrc72_get_valid_broadcaster();
+
+    console.log("response", JSON.stringify(response, dataItemStringify, 2));
 
     // Assert: Verify that the response is defined
     expect(response).toBeDefined();
@@ -1136,7 +1157,7 @@ describe("test orchestrator subscriptions", () => {
       expect(response.list.length).toBe(1);
 
       // Verify that the broadcaster in the list is the Orchestrator's canister ID
-      expect(response.list[0].toText()).toBe(orchestrator_fixture.canisterId.toText());
+      expect(response.list[0].toText()).toBe(mock_fixture.canisterId.toText());
     } else {
       // If the response is not the 'list' variant, fail the test
       throw new Error(`Unexpected response variant: ${JSON.stringify(response)}`);

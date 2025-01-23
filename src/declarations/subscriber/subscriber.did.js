@@ -93,7 +93,6 @@ export const idlFactory = ({ IDL }) => {
     'namespace' : IDL.Text,
   });
   const EventNotification__1 = IDL.Record({
-    'id' : IDL.Nat,
     'eventId' : IDL.Nat,
     'source' : IDL.Principal,
     'data' : ICRC16__2,
@@ -101,6 +100,7 @@ export const idlFactory = ({ IDL }) => {
     'prevEventId' : IDL.Opt(IDL.Nat),
     'filter' : IDL.Opt(IDL.Text),
     'timestamp' : IDL.Nat,
+    'notificationId' : IDL.Nat,
     'namespace' : IDL.Text,
   });
   const Namespace = IDL.Text;
@@ -121,7 +121,9 @@ export const idlFactory = ({ IDL }) => {
     }),
     'confirmTimer' : IDL.Opt(IDL.Nat),
     'error' : IDL.Opt(IDL.Text),
-    'confirmAccumulator' : IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Vec(IDL.Nat))),
+    'confirmAccumulator' : IDL.Vec(
+      IDL.Tuple(IDL.Principal, IDL.Vec(IDL.Tuple(IDL.Nat, IDL.Nat)))
+    ),
     'broadcasters' : IDL.Vec(IDL.Tuple(IDL.Nat, IDL.Vec(IDL.Principal))),
     'lastEventId' : IDL.Vec(
       IDL.Tuple(IDL.Text, IDL.Vec(IDL.Tuple(IDL.Nat, IDL.Nat)))
@@ -163,7 +165,6 @@ export const idlFactory = ({ IDL }) => {
     })
   );
   const EventNotification = IDL.Record({
-    'id' : IDL.Nat,
     'eventId' : IDL.Nat,
     'source' : IDL.Principal,
     'data' : ICRC16__1,
@@ -171,6 +172,7 @@ export const idlFactory = ({ IDL }) => {
     'prevEventId' : IDL.Opt(IDL.Nat),
     'filter' : IDL.Opt(IDL.Text),
     'timestamp' : IDL.Nat,
+    'notificationId' : IDL.Nat,
     'namespace' : IDL.Text,
   });
   const ICRC16Map__2 = IDL.Vec(IDL.Tuple(IDL.Text, ICRC16__2));

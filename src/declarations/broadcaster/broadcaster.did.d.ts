@@ -27,26 +27,25 @@ export type ConfirmMessageItemResult = { 'Ok' : bigint } |
 export type ConfirmMessageResult = { 'allAccepted' : null } |
   { 'itemized' : Array<ConfirmMessageItemResult> };
 export interface EmitableEvent {
-  'id' : bigint,
+  'eventId' : bigint,
   'broadcaster' : Principal,
   'source' : Principal,
   'data' : ICRC16,
   'headers' : [] | [ICRC16Map],
+  'prevEventId' : [] | [bigint],
   'timestamp' : bigint,
-  'prevId' : [] | [bigint],
   'namespace' : string,
 }
 export interface Event {
-  'id' : bigint,
+  'eventId' : bigint,
   'source' : Principal,
   'data' : ICRC16__1,
   'headers' : [] | [ICRC16Map__1],
+  'prevEventId' : [] | [bigint],
   'timestamp' : bigint,
-  'prevId' : [] | [bigint],
   'namespace' : string,
 }
 export interface EventNotification {
-  'id' : bigint,
   'eventId' : bigint,
   'source' : Principal,
   'data' : ICRC16__2,
@@ -54,10 +53,10 @@ export interface EventNotification {
   'prevEventId' : [] | [bigint],
   'filter' : [] | [string],
   'timestamp' : bigint,
+  'notificationId' : bigint,
   'namespace' : string,
 }
 export interface EventNotificationRecordShared {
-  'id' : bigint,
   'bConfirmed' : [] | [bigint],
   'eventId' : bigint,
   'destination' : Principal,
@@ -65,11 +64,11 @@ export interface EventNotificationRecordShared {
   'stake' : StakeRecord,
   'filter' : [] | [string],
   'bSent' : [] | [bigint],
+  'notificationId' : bigint,
   'timerId' : [] | [bigint],
   'publication' : string,
 }
 export interface EventNotificationRecordShared__1 {
-  'id' : bigint,
   'bConfirmed' : [] | [bigint],
   'eventId' : bigint,
   'destination' : Principal,
@@ -77,11 +76,11 @@ export interface EventNotificationRecordShared__1 {
   'stake' : StakeRecord,
   'filter' : [] | [string],
   'bSent' : [] | [bigint],
+  'notificationId' : bigint,
   'timerId' : [] | [bigint],
   'publication' : string,
 }
 export interface EventNotification__1 {
-  'id' : bigint,
   'eventId' : bigint,
   'source' : Principal,
   'data' : ICRC16__4,
@@ -89,10 +88,10 @@ export interface EventNotification__1 {
   'prevEventId' : [] | [bigint],
   'filter' : [] | [string],
   'timestamp' : bigint,
+  'notificationId' : bigint,
   'namespace' : string,
 }
 export interface EventNotification__2 {
-  'id' : bigint,
   'eventId' : bigint,
   'source' : Principal,
   'data' : ICRC16__3,
@@ -100,6 +99,7 @@ export interface EventNotification__2 {
   'prevEventId' : [] | [bigint],
   'filter' : [] | [string],
   'timestamp' : bigint,
+  'notificationId' : bigint,
   'namespace' : string,
 }
 export interface EventRecordShared {
@@ -115,12 +115,12 @@ export interface EventRecordShared__1 {
   'event' : Event__1,
 }
 export interface Event__1 {
-  'id' : bigint,
+  'eventId' : bigint,
   'source' : Principal,
   'data' : ICRC16__3,
   'headers' : [] | [ICRC16Map__3],
+  'prevEventId' : [] | [bigint],
   'timestamp' : bigint,
-  'prevId' : [] | [bigint],
   'namespace' : string,
 }
 export interface GenericError { 'message' : string, 'error_code' : bigint }
@@ -290,6 +290,15 @@ export interface MVEvent {
     [],
     Array<[EventNotificationRecordShared__1, EventRecordShared__1]>
   >,
+  'getReceivedPublishes' : ActorMethod<[], Array<[Principal, Array<Event>]>>,
+  'getRecievedConfirmations' : ActorMethod<
+    [],
+    Array<[Principal, Array<bigint>]>
+  >,
+  'getRecievedNotifications' : ActorMethod<
+    [],
+    Array<[Principal, Array<EventNotification>]>
+  >,
   'get_stats' : ActorMethod<[], Stats>,
   'get_subnet_for_canister' : ActorMethod<
     [],
@@ -343,6 +352,7 @@ export interface PublicationRecordShared {
   'stakeIndex' : Array<[StakeRecord, Principal]>,
   'registeredRelay' : Array<[Principal, [] | [Array<string>]]>,
   'namespace' : string,
+  'registeredRelayer' : Array<Principal>,
 }
 export type PublishError = { 'GenericError' : GenericError } |
   { 'PublicationNotFound' : null } |
@@ -397,7 +407,7 @@ export interface Stats__2 {
     { 'icrc75' : ICRC75Item },
   'confirmTimer' : [] | [bigint],
   'error' : [] | [string],
-  'confirmAccumulator' : Array<[Principal, Array<bigint>]>,
+  'confirmAccumulator' : Array<[Principal, Array<[bigint, bigint]>]>,
   'broadcasters' : Array<[bigint, Array<Principal>]>,
   'lastEventId' : Array<[string, Array<[bigint, bigint]>]>,
   'icrc72OrchestratorCanister' : Principal,
@@ -413,6 +423,7 @@ export interface Stats__3 {
   'lastExecutionTime' : Time,
 }
 export interface SubscriberRecordShared {
+  'skipTracker' : bigint,
   'skip' : [] | [[bigint, bigint]],
   'subscriptionId' : bigint,
   'filter' : [] | [string],

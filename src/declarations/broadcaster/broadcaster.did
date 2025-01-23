@@ -28,6 +28,7 @@ type SubscriberRecordShared =
                nat;
                nat;
              };
+   skipTracker: int;
    subscriber: principal;
    subscriptionId: nat;
  };
@@ -57,7 +58,10 @@ type Stats__2 =
                      };
    confirmAccumulator: vec record {
                              principal;
-                             vec nat;
+                             vec record {
+                                   nat;
+                                   nat;
+                                 };
                            };
    confirmTimer: opt nat;
    error: opt text;
@@ -180,6 +184,7 @@ type PublicationRecordShared =
                           principal;
                           opt vec text;
                         };
+   registeredRelayer: vec principal;
    registeredSubscribers: vec record {
                                 principal;
                                 SubscriberRecordShared;
@@ -205,6 +210,19 @@ type MVEvent =
     (vec record {
            EventNotificationRecordShared__1;
            EventRecordShared__1;
+         }) query;
+   getReceivedPublishes: () -> (vec record {
+                                      principal;
+                                      vec Event;
+                                    }) query;
+   getRecievedConfirmations: () -> (vec record {
+                                          principal;
+                                          vec nat;
+                                        }) query;
+   getRecievedNotifications: () ->
+    (vec record {
+           principal;
+           vec EventNotification;
          }) query;
    get_stats: () -> (Stats) query;
    get_subnet_for_canister: () ->
@@ -468,10 +486,10 @@ type GenericError =
 type Event__1 = 
  record {
    data: ICRC16__3;
+   eventId: nat;
    headers: opt ICRC16Map__3;
-   id: nat;
    namespace: text;
-   prevId: opt nat;
+   prevEventId: opt nat;
    source: principal;
    timestamp: nat;
  };
@@ -495,8 +513,8 @@ type EventNotification__2 =
    eventId: nat;
    filter: opt text;
    headers: opt ICRC16Map__3;
-   id: nat;
    namespace: text;
+   notificationId: nat;
    prevEventId: opt nat;
    source: principal;
    timestamp: nat;
@@ -507,8 +525,8 @@ type EventNotification__1 =
    eventId: nat;
    filter: opt text;
    headers: opt ICRC16Map__4;
-   id: nat;
    namespace: text;
+   notificationId: nat;
    prevEventId: opt nat;
    source: principal;
    timestamp: nat;
@@ -521,7 +539,7 @@ type EventNotificationRecordShared__1 =
    eventId: nat;
    filter: opt text;
    headers: opt ICRC16Map__3;
-   id: nat;
+   notificationId: nat;
    publication: text;
    stake: StakeRecord;
    timerId: opt nat;
@@ -534,7 +552,7 @@ type EventNotificationRecordShared =
    eventId: nat;
    filter: opt text;
    headers: opt ICRC16Map__3;
-   id: nat;
+   notificationId: nat;
    publication: text;
    stake: StakeRecord;
    timerId: opt nat;
@@ -545,8 +563,8 @@ type EventNotification =
    eventId: nat;
    filter: opt text;
    headers: opt ICRC16Map__2;
-   id: nat;
    namespace: text;
+   notificationId: nat;
    prevEventId: opt nat;
    source: principal;
    timestamp: nat;
@@ -554,10 +572,10 @@ type EventNotification =
 type Event = 
  record {
    data: ICRC16__1;
+   eventId: nat;
    headers: opt ICRC16Map__1;
-   id: nat;
    namespace: text;
-   prevId: opt nat;
+   prevEventId: opt nat;
    source: principal;
    timestamp: nat;
  };
@@ -565,10 +583,10 @@ type EmitableEvent =
  record {
    broadcaster: principal;
    data: ICRC16;
+   eventId: nat;
    headers: opt ICRC16Map;
-   id: nat;
    namespace: text;
-   prevId: opt nat;
+   prevEventId: opt nat;
    source: principal;
    timestamp: nat;
  };

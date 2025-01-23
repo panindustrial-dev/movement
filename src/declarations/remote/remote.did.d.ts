@@ -21,17 +21,16 @@ export interface ArgList {
 }
 export type Args = [] | [ArgList];
 export interface EmitableEvent {
-  'id' : bigint,
+  'eventId' : bigint,
   'broadcaster' : Principal,
   'source' : Principal,
   'data' : ICRC16,
   'headers' : [] | [ICRC16Map],
+  'prevEventId' : [] | [bigint],
   'timestamp' : bigint,
-  'prevId' : [] | [bigint],
   'namespace' : string,
 }
 export interface EventNotification {
-  'id' : bigint,
   'eventId' : bigint,
   'source' : Principal,
   'data' : ICRC16__1,
@@ -39,6 +38,7 @@ export interface EventNotification {
   'prevEventId' : [] | [bigint],
   'filter' : [] | [string],
   'timestamp' : bigint,
+  'notificationId' : bigint,
   'namespace' : string,
 }
 export type ICRC16 = { 'Int' : bigint } |

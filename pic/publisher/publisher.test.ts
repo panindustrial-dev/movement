@@ -212,13 +212,13 @@ describe("test publisher", () => {
     expect(state.icrc72Subscriber.icrc72OrchestratorCanister).toEqual(orchestrator_fixture.canisterId);
     expect(state.icrc72Subscriber.broadcasters.length).toEqual(0);
     expect(state.icrc72Subscriber.subscriptions.length).toEqual(2);
-    expect(state.icrc72Subscriber.subscriptions[0][0]).toEqual(777n);
-    expect(state.icrc72Subscriber.subscriptions[1][0]).toEqual(778n);
+    expect(state.icrc72Subscriber.subscriptions[0][0]).toEqual(779n);
+    expect(state.icrc72Subscriber.subscriptions[1][0]).toEqual(780n);
     console.log("state.icrc72Subscriber.subscriptions.length",state.icrc72Subscriber.subscriptions.length);
     console.log("state.icrc72Subscriber.subscriptions[0]",state.icrc72Subscriber.subscriptions[0]);
     console.log("state.icrc72Subscriber.subscriptions[1]",state.icrc72Subscriber.subscriptions[1]);
-    expect(state.icrc72Subscriber.subscriptions[0][1].namespace).toEqual("icrc72:publisher:sys:" + publisher_fixture.canisterId.toText());
-    expect(state.icrc72Subscriber.subscriptions[1][1].namespace).toEqual("icrc72:subscriber:sys:" + publisher_fixture.canisterId.toText());
+    expect(state.icrc72Subscriber.subscriptions[0][1].namespace).toEqual("icrc72:subscriber:sys:" + publisher_fixture.canisterId.toText());
+    expect(state.icrc72Subscriber.subscriptions[1][1].namespace).toEqual("icrc72:publisher:sys:" + publisher_fixture.canisterId.toText());
     expect(state.icrc72Subscriber.validBroadcasters).toBeDefined();
     if ('list' in state.icrc72Subscriber.validBroadcasters) {
       expect(state.icrc72Subscriber.validBroadcasters.list).toBeDefined();
@@ -405,16 +405,16 @@ describe("test publisher", () => {
     expect(publishMessages[0].length).toBeGreaterThan(2);
     expect(publishMessages[0][0].namespace).toEqual("com.example.testapp.events");
     console.log("publishMessages[0][0]",publishMessages[0][0]);
-    expect(publishMessages[0][0].id).toEqual(0n);
+    expect(publishMessages[0][0].eventId).toEqual(0n);
     
 
     expect(publishMessages[0][1].namespace).toEqual("com.example.testapp.events");
     console.log("publishMessages2[1][0]",publishMessages[0][1]);
-    expect(publishMessages[0][1].id).toEqual(1n);
+    expect(publishMessages[0][1].eventId).toEqual(1n);
 
     expect(publishMessages[0][2].namespace).toEqual("com.example.testapp.events");
     console.log("publishMessages[2][0]",publishMessages[0][2]);
-    expect(publishMessages[0][2].id).toEqual(2n);
+    expect(publishMessages[0][2].eventId).toEqual(2n);
   }
 
   /**
@@ -683,20 +683,20 @@ describe("test publisher", () => {
     expect(publishMessages.length).toBeGreaterThan(0);
     expect(publishMessages[0][0].namespace).toEqual("com.example.testapp.events");
     console.log("publishMessages[0][0]",publishMessages[0][0]);
-    expect(publishMessages[0][0].id).toEqual(2n);
+    expect(publishMessages[0][0].eventId).toEqual(2n);
     
 
     expect(publishMessages2).toBeDefined();
     expect(publishMessages2.length).toBeGreaterThan(0);
     expect(publishMessages2[0][0].namespace).toEqual("com.example.testapp.events");
     console.log("publishMessages2[0][0]",publishMessages2[0][0]);
-    expect(publishMessages2[0][0].id).toEqual(0n);
+    expect(publishMessages2[0][0].eventId).toEqual(0n);
 
     expect(publishMessages3).toBeDefined();
     expect(publishMessages3.length).toBeGreaterThan(0);
     expect(publishMessages3[0][0].namespace).toEqual("com.example.testapp.events");
     console.log("publishMessages3[0][0]",publishMessages3[0][0]);
-    expect(publishMessages3[0][0].id).toEqual(1n);
+    expect(publishMessages3[0][0].eventId).toEqual(1n);
   }
 
   /**
@@ -1066,16 +1066,16 @@ describe("test publisher", () => {
     expect(publishMessages[0].length).toBeGreaterThan(2);
     expect(publishMessages[0][0].namespace).toEqual("com.example.testapp.events");
     console.log("publishMessages[0][0]",publishMessages[0][0]);
-    expect(publishMessages[0][0].id).toEqual(0n);
+    expect(publishMessages[0][0].eventId).toEqual(0n);
     
 
     expect(publishMessages[0][1].namespace).toEqual("com.example.testapp.events2");
     console.log("publishMessages2[0][1]",publishMessages[0][1]);
-    expect(publishMessages[0][1].id).toEqual(0n);
+    expect(publishMessages[0][1].eventId).toEqual(0n);
 
     expect(publishMessages[0][2].namespace).toEqual("com.example.testapp.events3");
     console.log("publishMessages[0][2]",publishMessages[0][2]);
-    expect(publishMessages[0][2].id).toEqual(0n);
+    expect(publishMessages[0][2].eventId).toEqual(0n);
   }
 
   

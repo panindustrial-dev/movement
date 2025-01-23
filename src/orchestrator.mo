@@ -135,18 +135,19 @@ shared (deployer) actor class MVEvent<system>(args: ?{
       args = icrc72SubscriberInitArgs;
       pullEnvironment = ?(func() : ICRC72Subscriber.Environment{
         {      
-          addRecord = null;
-          generateId = null;
-          icrc72OrchestratorCanister = thisPrincipal;
+          var addRecord = null;
+          var generateId = null;
+          var icrc72OrchestratorCanister = thisPrincipal;
           tt = tt();
-          handleEventOrder = null;
-          handleNotificationError = null;
+          var handleEventOrder = null;
+          var handleNotificationError = null;
+          var handleNotificationPrice = null;
         };
       });
 
       onInitialize = ?(func (newClass: ICRC72Subscriber.Subscriber) : async* () {
         D.print("Initializing Subscriber");
-        ignore Timer.setTimer<system>(#nanoseconds(0), newClass.initializeSubscriptions);
+        //ignore Timer.setTimer<system>(#nanoseconds(0), newClass.initializeSubscriptions);
         //do any work here necessary for initialization
       });
       onStorageChange = func(state: ICRC72Subscriber.State) {
@@ -164,19 +165,19 @@ shared (deployer) actor class MVEvent<system>(args: ?{
       args = icrc72PublisherInitArgs;
       pullEnvironment = ?(func() : ICRC72Publisher.Environment{
         {      
-          addRecord = null;
-          generateId = null;
+          var addRecord = null;
+          var generateId = null;
           icrc72Subscriber = icrc72_subscriber();
-          icrc72OrchestratorCanister = thisPrincipal;
-          onEventPublishError = null;
-          onEventPublished = null;
+          var icrc72OrchestratorCanister = thisPrincipal;
+          var onEventPublishError = null;
+          var onEventPublished = null;
           tt = tt();
         };
       });
 
       onInitialize = ?(func (newClass: ICRC72Publisher.Publisher) : async* () {
         D.print("Initializing Publisher");
-        ignore Timer.setTimer<system>(#nanoseconds(0), newClass.initializeSubscriptions);
+        //ignore Timer.setTimer<system>(#nanoseconds(0), newClass.initializeSubscriptions);
         //do any work here necessary for initialization
       });
       onStorageChange = func(state: ICRC72Publisher.State) {
@@ -193,8 +194,8 @@ shared (deployer) actor class MVEvent<system>(args: ?{
       args = icrc72OrchestratorInitArgs;
       pullEnvironment = ?(func() : ICRC72Orchestrator.Environment{
         {      
-          addRecord = null;
-          generateId = null;
+          var addRecord = null;
+          var generateId = null;
           icrc72Subscriber = icrc72_subscriber();
           icrc72Publisher = icrc72_publisher();
           tt = tt();
@@ -217,12 +218,14 @@ shared (deployer) actor class MVEvent<system>(args: ?{
 
   public shared(msg) func file_subnet_broadcaster(principal: Principal) : async () {
     ignore ICRC72Orchestrator.Set.put(broadcasterSet, ICRC72Orchestrator.Set.phash, principal);
+    ignore await* icrc72_orchestrator().fileBroadcaster(principal);
   };
 
   public shared(msg) func broadcaster_ready() : async () {
     switch(ICRC72Orchestrator.Set.has(broadcasterSet, ICRC72Orchestrator.Set.phash, msg.caller)){
       case(true) {
-          ignore await* icrc72_orchestrator().fileBroadcaster(msg.caller);
+          debug if(debug_channel.announce) D.print("CANISTER: Broadcaster found and filining broadcaster: " # debug_show(msg.caller));
+          ignore await* icrc72_orchestrator().regBroadcaster(msg.caller);
           return;
       };
       case(false) {
@@ -262,13 +265,22 @@ shared (deployer) actor class MVEvent<system>(args: ?{
       case(null) msg.caller;
       case(?val) val;
     };
-    //debug if(debug_channel.announce) D.print("GOVERNANCE: Get Subnet for Canister: " # debug_show(target));
 
-    //debug if(debug_channel.announce) D.print("GOVERNANCE: Get Subnet for Canister: " # debug_show(ICRC72Orchestrator.Map.toArray(subMap)));
+    debug if(debug_channel.announce) D.print("GOVERNANCE: Get Subnet for Canister: " # debug_show(target));
+
+    //debug if(debug_channel.announce) D.print("GOVERNANCE: Get Subnet for Canister: " # debug_show(ICRC72Orchestrator.Map.toArray(subMap)));]
+
+
+    D.print("somethihg something" # debug_show((Principal.fromActor(this), ICRC72Orchestrator.BTree.toArray(icrc72_orchestrator().getState().broadcasters))));
+
+
 
 
     switch( ICRC72Orchestrator.Map.get(subMap, ICRC72Orchestrator.Map.phash, target)){
-      case(null) return #Err( "Not Found");
+      case(null){
+        debug if(debug_channel.announce) D.print("********WARNIN********: subnet not configured: " # debug_show(target) # " not found using orchestrator as subnet");
+        return #Ok({subnet_id = ?Principal.fromActor(this)});
+      };
       case(?val) return #Ok({ subnet_id = ?val });
     }
   };
@@ -351,6 +363,12 @@ shared (deployer) actor class MVEvent<system>(args: ?{
   public shared(msg) func icrc72_delete_subscription(request: [ICRC72OrchestratorService.SubscriptionDeleteRequest]) : async [ICRC72OrchestratorService.SubscriptionDeleteResult] {
     debug if(debug_channel.announce) D.print("CANISTER: Delete Publication: " # debug_show(request));
     return await* icrc72_orchestrator().icrc72_delete_subscription(msg.caller, request);
+  };
+
+  public func initialize() : async () {
+    ignore Timer.setTimer<system>(#nanoseconds(0), icrc72_subscriber().initializeSubscriptions);();
+    ignore Timer.setTimer<system>(#nanoseconds(0), icrc72_publisher().initializeSubscriptions);();
+    
   };
 
 

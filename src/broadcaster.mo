@@ -149,12 +149,13 @@ shared (deployer) actor class MVEvent<system>(args: ?{
       args = icrc72SubscriberInitArgs;
       pullEnvironment = ?(func() : ICRC72Subscriber.Environment{
         {      
-          addRecord = null;
-          generateId = null;
-          icrc72OrchestratorCanister = orchestratorPrincipal;
+          var addRecord = null;
+          var generateId = null;
+          var icrc72OrchestratorCanister = orchestratorPrincipal;
           tt = tt();
-          handleEventOrder = null;
-          handleNotificationError = null;
+          var handleEventOrder = null;
+          var handleNotificationError = null;
+          var handleNotificationPrice = null;
         };
       });
 
@@ -214,21 +215,22 @@ shared (deployer) actor class MVEvent<system>(args: ?{
       args = icrc72BroadcasterInitArgs;
       pullEnvironment = ?(func() : ICRC72Broadcaster.Environment{
         {      
-          add_record = null;
+          var add_record = null;
           tt = tt();
           icrc72Subscriber = icrc72_subscriber();
           icrc72Publisher  = icrc72_publisher();
-          publicationSearch  = null;
-          subscriptionSearch = null;
-          subscriptionFilter = null;
-          publishReturnFunction = null;
-          handleConfirmation = ?handleEventNotification;
-          handleEventFinalized = null;
-          handleBroadcasterListening = null; //State, Environment, Namespace, Principal, Listening = True; Resigning = False
-          handleBroadcasterPublishing = null; //State, Environment, Namespace, Principal, Listening = True; Resigning = False
-          roundDelay = null;
-          maxMessages = null;
-          icrc72OrchestratorCanister = orchestratorPrincipal;
+          var publicationSearch  = null;
+          var subscriptionSearch = null;
+          var subscriptionFilter = null;
+          var publishReturnFunction = null;
+          var handleConfirmation = ?handleEventNotification;
+          var handleEventFinalized = null;
+          var handleBroadcasterListening = null; //State, Environment, Namespace, Principal, Listening = True; Resigning = False
+          var handleBroadcasterPublishing = null; //State, Environment, Namespace, Principal, Listening = True; Resigning = False
+          var willPublish = null;
+          var roundDelay = null;
+          var maxMessages = null;
+          var icrc72OrchestratorCanister = orchestratorPrincipal;
         };
       });
 
@@ -254,9 +256,16 @@ shared (deployer) actor class MVEvent<system>(args: ?{
     return Buffer.toArray(handledNotifications);
   };
 
+  let recievedNotifications = Buffer.Buffer<(Principal, [ICRC72SubscriberService.EventNotification])>(1);
+
   public shared(msg) func icrc72_handle_notification(items : [ICRC72SubscriberService.EventNotification]) : () {
-    debug if(debug_channel.announce) D.print("CANISTER: Received notification: " # debug_show(items));
+    debug if(debug_channel.announce) D.print("CANISTER: Received notification: " # debug_show(msg.caller, items));
+    recievedNotifications.add((msg.caller, items));
     return await* icrc72_subscriber().icrc72_handle_notification(msg.caller, items);
+  };
+
+  public query(msg) func getRecievedNotifications() : async [(Principal, [ICRC72SubscriberService.EventNotification])] {
+    return Buffer.toArray(recievedNotifications);
   };
 
 
@@ -267,14 +276,29 @@ shared (deployer) actor class MVEvent<system>(args: ?{
     return #Ok({subnet_id = ?Principal.fromActor(this)});
   };
 
+  let receivedConfirmations = Buffer.Buffer<(Principal, [Nat])>(1);
+
   public shared(msg) func icrc72_confirm_notifications(items : [Nat]) : async ICRC72BroadcasterService.ConfirmMessageResult {
-    debug if(debug_channel.announce) D.print("CANISTER: Received confirm: " # debug_show(items));
+    debug if(debug_channel.announce) D.print("CANISTER: Received confirm: " # debug_show(msg.caller, items));
+    receivedConfirmations.add((msg.caller, items));
     return await* icrc72_broadcaster().icrc72_confirm_notifications(msg.caller, items);
   };
 
+  public query(msg) func getRecievedConfirmations() : async [(Principal, [Nat])] {
+    return Buffer.toArray(receivedConfirmations);
+  };
+
+
+  let receivedPublishes = Buffer.Buffer<(Principal, [ICRC72BroadcasterService.Event])>(1);
+
   public shared(msg) func icrc72_publish(messages : [ICRC72BroadcasterService.Event]) : async [?ICRC72BroadcasterService.PublishResult] {
-    debug if(debug_channel.announce) D.print("CANISTER: Received publish: " # debug_show(messages));
+    debug if(debug_channel.announce) D.print("CANISTER: Received publish: " # debug_show(msg.caller, messages));
+    receivedPublishes.add((msg.caller, messages));
     return await* icrc72_broadcaster().icrc72_publish(msg.caller, messages);
+  };
+
+  public query(msg) func getReceivedPublishes() : async [(Principal, [ICRC72BroadcasterService.Event])] {
+    return Buffer.toArray(receivedPublishes);
   };
 
   public query(msg) func get_stats() : async ICRC72Broadcaster.Stats {
@@ -283,15 +307,15 @@ shared (deployer) actor class MVEvent<system>(args: ?{
 
   public shared func simulatePublisherAssignment(namespace: Text, id: Nat, principal: Principal) : async () {
     await* icrc72_subscriber().icrc72_handle_notification(
-      icrc72_broadcaster().environment.icrc72OrchestratorCanister, [
+      icrc72_broadcaster().getEnvironment().icrc72OrchestratorCanister, [
         {
-          id = id;
+          notificationId = id;
           eventId = id;
           prevEventId = null;
           timestamp = Int.abs(Time.now());
           filter = null;
           headers = null;
-          source = icrc72_broadcaster().environment.icrc72OrchestratorCanister;
+          source = icrc72_broadcaster().getEnvironment().icrc72OrchestratorCanister;
           namespace = ICRC72Broadcaster.CONST.broadcasters.sys # Principal.toText(thisPrincipal);
           data = #Map([
             (ICRC72Broadcaster.CONST.broadcasters.publisher.add, #Array([
@@ -310,15 +334,15 @@ shared (deployer) actor class MVEvent<system>(args: ?{
 
   public shared func simulatePublisherRemoval(namespace: Text, id: Nat, principal: Principal) : async () {
     await* icrc72_subscriber().icrc72_handle_notification(
-      icrc72_broadcaster().environment.icrc72OrchestratorCanister, [
+      icrc72_broadcaster().getEnvironment().icrc72OrchestratorCanister, [
         {
-          id = id;
+          notificationId = id;
           eventId = id;
           prevEventId = null;
           timestamp = Int.abs(Time.now());
           filter = null;
           headers = null;
-          source = icrc72_broadcaster().environment.icrc72OrchestratorCanister;
+          source = icrc72_broadcaster().getEnvironment().icrc72OrchestratorCanister;
           namespace = ICRC72Broadcaster.CONST.broadcasters.sys # Principal.toText(thisPrincipal);
           data = #Map([
             (ICRC72Broadcaster.CONST.broadcasters.publisher.remove, #Array([
@@ -336,15 +360,15 @@ shared (deployer) actor class MVEvent<system>(args: ?{
 
   public shared func simulateSubscriberAssignment(namespace: Text, id: Nat, principal: Principal) : async () {
     await* icrc72_subscriber().icrc72_handle_notification(
-      icrc72_broadcaster().environment.icrc72OrchestratorCanister, [
+      icrc72_broadcaster().getEnvironment().icrc72OrchestratorCanister, [
         {
-          id = id;
+          notificationId = id;
           eventId = id;
           prevEventId = null;
           timestamp = Int.abs(Time.now());
           filter = null;
           headers = null;
-          source = icrc72_broadcaster().environment.icrc72OrchestratorCanister;
+          source = icrc72_broadcaster().getEnvironment().icrc72OrchestratorCanister;
           namespace = ICRC72Broadcaster.CONST.broadcasters.sys # Principal.toText(thisPrincipal);
           data = #Map([
             (ICRC72Broadcaster.CONST.broadcasters.subscriber.add, #Array([
@@ -363,15 +387,15 @@ shared (deployer) actor class MVEvent<system>(args: ?{
 
   public shared func simulateSubscriberRemoval(namespace: Text, id: Nat, principal: Principal) : async () {
     await* icrc72_subscriber().icrc72_handle_notification(
-      icrc72_broadcaster().environment.icrc72OrchestratorCanister, [
+      icrc72_broadcaster().getEnvironment().icrc72OrchestratorCanister, [
         {
-          id = id;
+          notificationId = id;
           eventId = id;
           prevEventId = null;
           timestamp = Int.abs(Time.now());
           filter = null;
           headers = null;
-          source = icrc72_broadcaster().environment.icrc72OrchestratorCanister;
+          source = icrc72_broadcaster().getEnvironment().icrc72OrchestratorCanister;
           namespace = ICRC72Broadcaster.CONST.broadcasters.sys # Principal.toText(thisPrincipal);
           data = #Map([
             (ICRC72Broadcaster.CONST.broadcasters.subscriber.remove, #Array([
@@ -389,15 +413,15 @@ shared (deployer) actor class MVEvent<system>(args: ?{
 
   public shared func simulateRelayAssignment(namespace: Text, id: Nat, principal: Principal) : async () {
     await* icrc72_subscriber().icrc72_handle_notification(
-      icrc72_broadcaster().environment.icrc72OrchestratorCanister, [
+      icrc72_broadcaster().getEnvironment().icrc72OrchestratorCanister, [
         {
-          id = id;
+          notificationId = id;
           eventId = id;
           prevEventId = null;
           timestamp = Int.abs(Time.now());
           filter = null;
           headers = null;
-          source = icrc72_broadcaster().environment.icrc72OrchestratorCanister;
+          source = icrc72_broadcaster().getEnvironment().icrc72OrchestratorCanister;
           namespace = ICRC72Broadcaster.CONST.broadcasters.sys # Principal.toText(thisPrincipal);
           data = #Map([
             (ICRC72Broadcaster.CONST.broadcasters.relay.add, #Array([
@@ -416,15 +440,15 @@ shared (deployer) actor class MVEvent<system>(args: ?{
 
   public shared func simulateRelayRemoval(namespace: Text, id: Nat, principal: Principal) : async () {
     await* icrc72_subscriber().icrc72_handle_notification(
-      icrc72_broadcaster().environment.icrc72OrchestratorCanister, [
+      icrc72_broadcaster().getEnvironment().icrc72OrchestratorCanister, [
         {
-          id = id;
+          notificationId = id;
           eventId = id;
           prevEventId = null;
           timestamp = Int.abs(Time.now());
           filter = null;
           headers = null;
-          source = icrc72_broadcaster().environment.icrc72OrchestratorCanister;
+          source = icrc72_broadcaster().getEnvironment().icrc72OrchestratorCanister;
           namespace = ICRC72Broadcaster.CONST.broadcasters.sys # Principal.toText(thisPrincipal);
           data = #Map([
             (ICRC72Broadcaster.CONST.broadcasters.relay.remove, #Array([
@@ -444,25 +468,29 @@ shared (deployer) actor class MVEvent<system>(args: ?{
     return await* icrc72_broadcaster().icrc72_publish(
       sender, [
         {
-          id = id;
-          prevId = null;
+          eventId = id;
           prevEventId = null;
           timestamp = Int.abs(Time.now());
           filter = null;
           headers = null;
-          source = icrc72_broadcaster().environment.icrc72OrchestratorCanister;
+          source = icrc72_broadcaster().getEnvironment().icrc72OrchestratorCanister;
           namespace = namespace;
           data = #Map([("data", #Nat(data))])
         }
       ]);
   };
 
+  //we will let the orchestrator know we are ready and then intialize where all the subscriptions and publications are created
   public shared func initialize() : async (){
     tt().initialize<system>();
-    await icrc72_broadcaster().initializeSubscriptions();
-    await icrc72_subscriber().initializeSubscriptions();
-    await icrc72_publisher().initializeSubscriptions();
     await readyService.broadcaster_ready();
+
+    debug if(debug_channel.init) D.print("CANISTER: Initializing - broadcaster ready");
+
+
+    await icrc72_publisher().initializeSubscriptions();
+    await icrc72_subscriber().initializeSubscriptions();
+    await icrc72_broadcaster().initializeSubscriptions();
     return;
   };
 

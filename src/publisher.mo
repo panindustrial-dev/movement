@@ -124,12 +124,13 @@ shared (deployer) actor class Publisher<system>(args: ?{
       args = null;
       pullEnvironment = ?(func() : ICRC72Subscriber.Environment{
         {      
-          addRecord = null;
-          generateId = null;
-          icrc72OrchestratorCanister = orchestratorPrincipal;
+          var addRecord = null;
+          var generateId = null;
+          var icrc72OrchestratorCanister = orchestratorPrincipal;
           tt = tt();
-          handleEventOrder = null;
-          handleNotificationError = null;
+          var handleEventOrder = null;
+          var handleNotificationError = null;
+          var handleNotificationPrice = null;
         };
       });
 
@@ -168,12 +169,12 @@ shared (deployer) actor class Publisher<system>(args: ?{
       args = icrc72PublisherInitArgs;
       pullEnvironment = ?(func() : ICRC72Publisher.Environment{
         {      
-          addRecord = null;
-          generateId = null;
+          var addRecord = null;
+          var generateId = null;
           icrc72Subscriber = icrc72_subscriber();
-          icrc72OrchestratorCanister = orchestratorPrincipal;
-          onEventPublishError = ?handlePublishError;
-          onEventPublished = ?handlePublished;
+          var icrc72OrchestratorCanister = orchestratorPrincipal;
+          var onEventPublishError = ?handlePublishError;
+          var onEventPublished = ?handlePublished;
           tt = tt();
         };
       });
@@ -235,15 +236,15 @@ shared (deployer) actor class Publisher<system>(args: ?{
 
   public shared(msg) func simulateBroadcastAssignmentEvent(channel: Text, target: Principal){
 
-    await* icrc72_subscriber().icrc72_handle_notification(icrc72_subscriber().environment.icrc72OrchestratorCanister, [{
-      id = lastId;
+    await* icrc72_subscriber().icrc72_handle_notification(icrc72_subscriber().getEnvironment().icrc72OrchestratorCanister, [{
+      notificationId = lastId;
       eventId = lastId;
       namespace = ICRC72Subscriber.CONST.publisher.sys # Principal.toText(thisPrincipal);
       data = #Map([(ICRC72Publisher.CONST.broadcasters.publisher.broadcasters.add, #Array([#Array([#Text(channel), #Blob(Principal.toBlob(target))])]))]);
       headers = null;
       filter = null;
       prevEventId = null;
-      source = icrc72_subscriber().environment.icrc72OrchestratorCanister;
+      source = icrc72_subscriber().getEnvironment().icrc72OrchestratorCanister;
       timestamp = Int.abs(Time.now());
     }]);
 
@@ -254,15 +255,15 @@ shared (deployer) actor class Publisher<system>(args: ?{
 
   public shared(msg) func simulateBroadcastRemovalEvent(channel: Text, target: Principal){
 
-    await* icrc72_subscriber().icrc72_handle_notification(icrc72_subscriber().environment.icrc72OrchestratorCanister, [{
-      id = lastId;
+    await* icrc72_subscriber().icrc72_handle_notification(icrc72_subscriber().getEnvironment().icrc72OrchestratorCanister, [{
+      notificationId = lastId;
       eventId = lastId;
       namespace = ICRC72Publisher.CONST.publisher.sys # Principal.toText(thisPrincipal);
       data = #Map([(ICRC72Publisher.CONST.broadcasters.publisher.broadcasters.remove, #Array([#Array([#Text(channel), #Blob(Principal.toBlob(target))])]))]);
       headers = null;
       filter = null;
       prevEventId = null;
-      source = icrc72_subscriber().environment.icrc72OrchestratorCanister;
+      source = icrc72_subscriber().getEnvironment().icrc72OrchestratorCanister;
       timestamp = Int.abs(Time.now());
     }]);
     lastId += 1;
@@ -309,8 +310,8 @@ shared (deployer) actor class Publisher<system>(args: ?{
 
 
   public shared(msg) func simulatePublicationCreation() : async [ICRC72OrchestratorService.PublicationRegisterResult] {
-    let service : ICRC72OrchestratorService.Service = actor(Principal.toText(orchestratorPrincipal));
-    return await service.icrc72_register_publication([{
+
+    let result = await* icrc72_publisher().registerPublications([{
       namespace = "com.test.counter";
       config = [
         (ICRC72OrchestratorService.CONST.publication.publishers.allowed.list, #Array([#Blob(Principal.toBlob(thisPrincipal))])),
@@ -318,6 +319,11 @@ shared (deployer) actor class Publisher<system>(args: ?{
       ];
       memo = null;
     }]);
+
+    debug if(debug_channel.announce) D.print("CANISTER: Publication creation result: " # debug_show(result));
+
+    return result;
+    
   };
 
   

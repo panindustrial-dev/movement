@@ -141,6 +141,28 @@ describe("test orchestrator publications", () => {
 
     await orchestrator_fixture.actor.setIdentity(admin);
 
+    
+
+    await pic.tick(5);
+    await pic.advanceTime(60_000); // Advance time by 60 seconds
+
+    await orchestrator_fixture.actor.file_subnet_canister(orchestrator_fixture.canisterId, mock_fixture.canisterId);
+    await orchestrator_fixture.actor.file_subnet_broadcaster(mock_fixture.canisterId);
+
+    await orchestrator_fixture.actor.initialize();
+
+    await pic.tick(5);
+    await pic.advanceTime(60_000);
+    await pic.tick(5);
+
+
+    await mock_fixture.actor.simulateBroadcasterReady(orchestrator_fixture.canisterId);
+
+    await pic.tick(5);
+    await pic.advanceTime(60_000); // Advance time by 60 seconds  
+    await pic.tick(5);
+
+
     //let registerBroadcaster = await orchestrator_fixture.actor.registerBroadcaster({
   };
 
@@ -185,6 +207,9 @@ describe("test orchestrator publications", () => {
     // Arrange: Set up Orchestrator with the default scenario
     await setUpOrchestrator("defaultOrchestrator");
 
+
+    
+
     // Act: Fetch the Orchestrator's state
     const state = await orchestrator_fixture.actor.get_stats();
     console.log("Orchestrator Initialize State", state);
@@ -196,50 +221,62 @@ describe("test orchestrator publications", () => {
     // Check that initial configuration arrays are still empty
     expect(state.maxTake).toEqual(100n);
     expect(state.defaultTake).toEqual(100n);
-    expect(state.publications.length).toEqual(1);
-    expect(state.subscriptions.length).toEqual(0);
+    expect(state.publications.length).toEqual(3);
+    expect(state.subscriptions.length).toEqual(2);
     expect(state.broadcasters.length).toEqual(1);
-    expect(state.nextPublicationID).toEqual(1n);
-    expect(state.nextSubscriptionID).toEqual(0n);
+    expect(state.nextPublicationID).toBeGreaterThan(0n);
+    expect(state.nextSubscriptionID).toBeGreaterThan(0n);
     
 
     // Verify that the Timer Tool (TT) is still initialized correctly
     expect(state.tt).toBeDefined();
-    expect(state.tt.timers).toEqual(1n);
+    expect(state.tt.timers).toEqual(0n);
 
     // Verify the Subscriber component within the Orchestrator remains unchanged
     expect(state.icrc72Publisher).toBeDefined();
     expect(state.icrc72Publisher.icrc72OrchestratorCanister).toEqual(orchestrator_fixture.canisterId);
     expect(state.icrc72Publisher.icrc72Subscriber.broadcasters.length).toEqual(0);
-    expect(state.icrc72Publisher.icrc72Subscriber.subscriptions.length).toEqual(0);
+    expect(state.icrc72Publisher.icrc72Subscriber.subscriptions.length).toEqual(2);
     expect(state.icrc72Publisher.icrc72Subscriber.validBroadcasters).toBeDefined();
     expect(state.icrc72Publisher.icrc72Subscriber.confirmAccumulator.length).toEqual(0);
     expect(state.icrc72Publisher.icrc72Subscriber.confirmTimer.length).toEqual(0);
     expect(state.icrc72Publisher.icrc72Subscriber.lastEventId.length).toEqual(0);
     expect(state.icrc72Publisher.icrc72Subscriber.backlogs.length).toEqual(0);
-    expect(state.icrc72Publisher.icrc72Subscriber.readyForSubscription).toEqual(false);
+    expect(state.icrc72Publisher.icrc72Subscriber.readyForSubscription).toEqual(true);
     expect(state.icrc72Publisher.icrc72Subscriber.error.length).toBe(0);
     expect(state.icrc72Publisher.icrc72Subscriber.tt).toBeDefined();
-    expect(state.icrc72Publisher.icrc72Subscriber.tt.timers).toEqual(1n);
+    expect(state.icrc72Publisher.icrc72Subscriber.tt.timers).toEqual(0n);
 
     // Verify the Publisher component within the Orchestrator remains unchanged
     expect(state.icrc72Publisher.orchestrator).toEqual(orchestrator_fixture.canisterId);
-    expect(state.icrc72Publisher.broadcasters.length).toEqual(1);
+    expect(state.icrc72Publisher.broadcasters.length).toEqual(3);
     expect(state.icrc72Publisher.publications.length).toEqual(1);
     expect(state.icrc72Publisher.eventsProcessing).toEqual(false); 
     expect(state.icrc72Publisher.pendingEvents.length).toEqual(1);
     expect(state.icrc72Publisher.previousEventIds.length).toEqual(1);
-    expect(state.icrc72Publisher.drainEventId.length).toEqual(1);
+    expect(state.icrc72Publisher.drainEventId.length).toEqual(0);
     expect(state.icrc72Publisher.readyForPublications).toEqual(false);
     expect(state.icrc72Publisher.error.length).toBe(0); 
     expect(state.icrc72Publisher.tt).toBeDefined();
-    expect(state.icrc72Publisher.tt.timers).toEqual(1n);
+    expect(state.icrc72Publisher.tt.timers).toEqual(0n);
   });
 
   // Orchestrator Initializes as expected after a wait
   it('should initialize successfully after wait', async function testInitializationWait_Success() {
     // Arrange: Set up Orchestrator with the default scenario
     await setUpOrchestrator("defaultOrchestrator");
+
+
+    await orchestrator_fixture.actor.file_subnet_canister(orchestrator_fixture.canisterId, mock_fixture.canisterId);
+    await orchestrator_fixture.actor.file_subnet_canister(orchestrator_fixture.canisterId, orchestrator_fixture.canisterId);
+    await orchestrator_fixture.actor.file_subnet_broadcaster(mock_fixture.canisterId);
+
+    await pic.tick(5);
+    await pic.advanceTime(60_000);
+    await pic.tick(5)
+
+
+    await mock_fixture.actor.simulateBroadcasterReady(orchestrator_fixture.canisterId);
 
     // Act: Simulate waiting by advancing time and ticking the PocketIc instance
     await pic.tick(5);
@@ -248,7 +285,7 @@ describe("test orchestrator publications", () => {
 
     // Fetch the Orchestrator's state after the wait
     const state = await orchestrator_fixture.actor.get_stats();
-    console.log("Orchestrator Initialize State After Wait", state);
+    console.log("Orchestrator Initialize State After Wait", JSON.stringify(state, dataItemStringify, 2));
 
     // Assert: Verify that the Orchestrator's state remains consistent after the wait
     expect(state).toBeDefined();
@@ -289,7 +326,7 @@ describe("test orchestrator publications", () => {
     expect(state.icrc72Publisher.broadcasters.length).toEqual(3);
     expect(state.icrc72Publisher.publications.length).toEqual(1);
     expect(state.icrc72Publisher.eventsProcessing).toEqual(false); 
-    expect(state.icrc72Publisher.pendingEvents.length).toEqual(5);
+    expect(state.icrc72Publisher.pendingEvents.length).toEqual(1);
     expect(state.icrc72Publisher.previousEventIds.length).toEqual(1);
     expect(state.icrc72Publisher.drainEventId.length).toEqual(0);
     expect(state.icrc72Publisher.readyForPublications).toEqual(false);
@@ -303,8 +340,11 @@ describe("test orchestrator publications", () => {
     // Setup the orchestrator with the default scenario
     await setUpOrchestrator("default");
 
-    
+    await pic.tick(5);
+    await pic.advanceTime(60_000); // Advance time by 60 seconds
+    await pic.tick(5);
 
+    await orchestrator_fixture.actor.setIdentity(alice);
     // Call the register_publication method
     const result = await registerPublication(alice);
 
@@ -314,13 +354,20 @@ describe("test orchestrator publications", () => {
     expect(result[0]).toBeDefined();
     console.log("result", result);
     if (result[0][0] && 'Ok' in result[0][0]) {
-      expect(result[0][0].Ok).toBeGreaterThan(0);
+      expect(result[0][0].Ok).toBeGreaterThan(0n);
     } else {
       throw(`Expected Ok but got Err: ${JSON.stringify(result[0], dataItemStringify,2)}`);
     }
 
+    await pic.tick(5);
+    await pic.advanceTime(60_000); // Advance time by 60 seconds
+    await pic.tick(5);
+
+
     // Optionally, verify that the publication is stored correctly
     const stats = await orchestrator_fixture.actor.get_stats();
+
+    console.log("statsPost", JSON.stringify(stats, dataItemStringify, 2));
     expect(stats).toBeDefined();
     expect(stats.publications).toEqual(
       expect.arrayContaining([
@@ -333,6 +380,7 @@ describe("test orchestrator publications", () => {
         ]),
       ])
     );
+
     //does create pending event
     expect(stats.icrc72Publisher.pendingEvents).toBeDefined();
     expect(stats.icrc72Publisher.pendingEvents.length).toBeGreaterThan(0);
@@ -347,7 +395,7 @@ describe("test orchestrator publications", () => {
             ]),
           ]),
         }),
-        namespace: "icrc72:broadcaster:sys:" + orchestrator_fixture.canisterId.toText(),
+        namespace: "icrc72:broadcaster:sys:" + mock_fixture.canisterId.toText(),
       })
     );
 
@@ -444,9 +492,8 @@ describe("test orchestrator publications", () => {
     // Setup the orchestrator with the default scenario
     await setUpOrchestrator("default");
 
-    await pic.tick(5);
-    await pic.advanceTime(60_000); // Advance time by 60 seconds
-
+    
+    
     orchestrator_fixture.actor.setIdentity(alice);
 
     
@@ -461,7 +508,7 @@ describe("test orchestrator publications", () => {
     expect(firstResult[0]).toBeDefined();
     console.log("result", firstResult);
     if (firstResult[0][0] && 'Ok' in firstResult[0][0]) {
-      expect(firstResult[0][0].Ok).toBeGreaterThan(0);
+      expect(firstResult[0][0].Ok).toBeGreaterThan(0n);
     } else {
       throw(`Expected Ok but got Err: ${JSON.stringify(firstResult[0], dataItemStringify,2)}`);
     }
@@ -490,6 +537,11 @@ describe("test orchestrator publications", () => {
   it('should register multiple publications successfully', async function testRegisterMultiplePublications_Success() {
     // Setup the orchestrator with the default scenario
     await setUpOrchestrator("default");
+
+   
+    await pic.tick(5);
+    await pic.advanceTime(60_000); // Advance time by 60 seconds  
+    await pic.tick(5);
 
     // Define multiple PublicationRegistration objects
     const publicationRegistrations: PublicationRegistration[] = [
@@ -533,14 +585,23 @@ describe("test orchestrator publications", () => {
     expect(results.length).toBe(2);
 
     // Check each publication registration result
+    var foundItem = 0n
     results.forEach((result, index) => {
       expect(result).toBeDefined();
       if (result[0] && 'Ok' in result[0]) {
-        expect(result[0].Ok).toBeGreaterThan(0);
+        expect(result[0].Ok).toBeGreaterThan(2n);
+        if(foundItem == 0n){
+          foundItem = result[0].Ok;
+        }else {
+          expect(result[0].Ok).toBeGreaterThan(foundItem);
+        }
+        
       } else {
         throw(`Expected Ok but got Err: ${JSON.stringify(result)}`);
       }
     });
+
+    expect(results[0][0] && 'Ok' in results[0][0] && results[0][0].Ok).not.toEqual(results[1][0] && 'Ok' in results[1][0] && results[1][0].Ok);
 
     // Optionally, verify that both publications are stored correctly
     const stats = await orchestrator_fixture.actor.get_stats();
@@ -575,6 +636,11 @@ describe("test orchestrator publications", () => {
     // Setup the orchestrator with the default scenario
     await setUpOrchestrator("default");
 
+   
+    await pic.tick(5);
+    await pic.advanceTime(60_000); // Advance time by 60 seconds  
+    await pic.tick(5);
+
     orchestrator_fixture.actor.setIdentity(alice);
 
     // Define multiple PublicationRegistration objects with duplicates
@@ -598,12 +664,12 @@ describe("test orchestrator publications", () => {
         config: [
           ["icrc72:publication:publishers:allowed:list", {
             "Array": [
-              { "Blob": new Uint8Array(Principal.fromText(bob.getPrincipal().toText()).toUint8Array()) }
+              { "Blob": new Uint8Array(Principal.fromText(alice.getPrincipal().toText()).toUint8Array()) }
             ]
           }
           ],
           ["icrc72:publication:mode", {
-            "Text": "priority"
+            "Text": "fifo"
           }]
     ],
         memo: []
@@ -640,7 +706,7 @@ describe("test orchestrator publications", () => {
     expect(results[0][0]).toBeDefined();
     console.log("result", results[0]);
     if (results[0][0] && 'Ok' in results[0][0]) {
-      expect(results[0][0].Ok).toBeGreaterThan(0);
+      expect(results[0][0].Ok).toEqual(3n);
     } else {
       throw(`Expected Ok but got Err 0: ${JSON.stringify(results[0], dataItemStringify,2)}`);
     }
@@ -660,7 +726,7 @@ describe("test orchestrator publications", () => {
     expect(results[2][0]).toBeDefined();
     console.log("result", results[0]);
     if (results[2][0] && 'Ok' in results[2][0]) {
-      expect(results[2][0].Ok).toBeGreaterThan(1n);
+      expect(results[2][0].Ok).toBeGreaterThan(3n);
     } else {
       throw(`Expected Ok but got Err 2: ${JSON.stringify(results[0], dataItemStringify,2)}`);
     }
@@ -712,7 +778,7 @@ describe("test orchestrator publications", () => {
     expect(registerResult.length).toBe(1);
     expect(registerResult[0]).toBeDefined();
     if (registerResult[0][0] && 'Ok' in registerResult[0][0]) {
-      expect(registerResult[0][0].Ok).toBeGreaterThan(0);
+      expect(registerResult[0][0].Ok).toBeGreaterThan(0n);
     } else {
       throw new Error(`Expected Ok but got Err: ${JSON.stringify(registerResult[0][0])}`);
     }
@@ -946,7 +1012,7 @@ describe("test orchestrator publications", () => {
     expect(registerResult.length).toBe(1);
     expect(registerResult[0]).toBeDefined();
     if (registerResult[0][0] && 'Ok' in registerResult[0][0]) {
-      expect(registerResult[0][0].Ok).toBeGreaterThan(0);
+      expect(registerResult[0][0].Ok).toBeGreaterThan(0n);
     } else {
       throw new Error(`Expected Ok but got Err: ${JSON.stringify(registerResult[0][0])}`);
     }
@@ -1009,7 +1075,7 @@ describe("test orchestrator publications", () => {
     expect(registerResult.length).toBe(1);
     expect(registerResult[0]).toBeDefined();
     if (registerResult[0][0] && 'Ok' in registerResult[0][0]) {
-      expect(registerResult[0][0].Ok).toBeGreaterThan(0);
+      expect(registerResult[0][0].Ok).toBeGreaterThan(0n);
     } else {
       throw new Error(`Expected Ok but got Err: ${JSON.stringify(registerResult[0][0])}`);
     }
@@ -1093,12 +1159,14 @@ describe("test orchestrator publications", () => {
     expect(registerResult.length).toBe(1);
     expect(registerResult[0]).toBeDefined();
     if (registerResult[0][0] && 'Ok' in registerResult[0][0]) {
-      expect(registerResult[0][0].Ok).toBeGreaterThan(0);
+      expect(registerResult[0][0].Ok).toBeGreaterThan(0n);
     } else {
       throw new Error(`Expected Ok but got Err: ${JSON.stringify(registerResult[0][0])}`);
     }
 
     let stats = await orchestrator_fixture.actor.get_stats();
+
+    console.log("pubs", JSON.stringify(stats.publications, dataItemStringify, 2));  
 
     expect(stats.publications.length).toBe(4);
   
@@ -1146,7 +1214,7 @@ describe("test orchestrator publications", () => {
     expect(registerResult.length).toBe(1);
     expect(registerResult[0]).toBeDefined();
     if (registerResult[0][0] && 'Ok' in registerResult[0][0]) {
-      expect(registerResult[0][0].Ok).toBeGreaterThan(0);
+      expect(registerResult[0][0].Ok).toBeGreaterThan(0n);
     } else {
       throw new Error(`Expected Ok but got Err: ${JSON.stringify(registerResult[0][0])}`);
     }

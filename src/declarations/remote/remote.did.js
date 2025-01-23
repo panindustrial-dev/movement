@@ -36,13 +36,13 @@ export const idlFactory = ({ IDL }) => {
   );
   const ICRC16Map = IDL.Vec(IDL.Tuple(IDL.Text, ICRC16));
   const EmitableEvent = IDL.Record({
-    'id' : IDL.Nat,
+    'eventId' : IDL.Nat,
     'broadcaster' : IDL.Principal,
     'source' : IDL.Principal,
     'data' : ICRC16,
     'headers' : IDL.Opt(ICRC16Map),
+    'prevEventId' : IDL.Opt(IDL.Nat),
     'timestamp' : IDL.Nat,
-    'prevId' : IDL.Opt(IDL.Nat),
     'namespace' : IDL.Text,
   });
   const InitArgs = IDL.Record({
@@ -110,7 +110,6 @@ export const idlFactory = ({ IDL }) => {
     })
   );
   const EventNotification = IDL.Record({
-    'id' : IDL.Nat,
     'eventId' : IDL.Nat,
     'source' : IDL.Principal,
     'data' : ICRC16__1,
@@ -118,6 +117,7 @@ export const idlFactory = ({ IDL }) => {
     'prevEventId' : IDL.Opt(IDL.Nat),
     'filter' : IDL.Opt(IDL.Text),
     'timestamp' : IDL.Nat,
+    'notificationId' : IDL.Nat,
     'namespace' : IDL.Text,
   });
   const MVEvent = IDL.Service({
@@ -170,13 +170,13 @@ export const init = ({ IDL }) => {
   );
   const ICRC16Map = IDL.Vec(IDL.Tuple(IDL.Text, ICRC16));
   const EmitableEvent = IDL.Record({
-    'id' : IDL.Nat,
+    'eventId' : IDL.Nat,
     'broadcaster' : IDL.Principal,
     'source' : IDL.Principal,
     'data' : ICRC16,
     'headers' : IDL.Opt(ICRC16Map),
+    'prevEventId' : IDL.Opt(IDL.Nat),
     'timestamp' : IDL.Nat,
-    'prevId' : IDL.Opt(IDL.Nat),
     'namespace' : IDL.Text,
   });
   const InitArgs = IDL.Record({

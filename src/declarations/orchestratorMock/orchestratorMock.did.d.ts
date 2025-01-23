@@ -8,16 +8,15 @@ export type ConfirmMessageItemResult = { 'Ok' : bigint } |
 export type ConfirmMessageResult = { 'allAccepted' : null } |
   { 'itemized' : Array<ConfirmMessageItemResult> };
 export interface Event {
-  'id' : bigint,
+  'eventId' : bigint,
   'source' : Principal,
   'data' : ICRC16__1,
   'headers' : [] | [ICRC16Map__1],
+  'prevEventId' : [] | [bigint],
   'timestamp' : bigint,
-  'prevId' : [] | [bigint],
   'namespace' : string,
 }
 export interface EventNotification {
-  'id' : bigint,
   'eventId' : bigint,
   'source' : Principal,
   'data' : ICRC16__2,
@@ -25,6 +24,7 @@ export interface EventNotification {
   'prevEventId' : [] | [bigint],
   'filter' : [] | [string],
   'timestamp' : bigint,
+  'notificationId' : bigint,
   'namespace' : string,
 }
 export interface GenericError { 'message' : string, 'error_code' : bigint }
@@ -130,6 +130,7 @@ export type OrchestrationQuerySlice = { 'ByBroadcaster' : Principal } |
   { 'ByNamespace' : string } |
   { 'BySubscriber' : Principal };
 export interface OrchestratorMock {
+  'broadcaster_ready' : ActorMethod<[], undefined>,
   'getConfirmNotices' : ActorMethod<[], Array<Array<bigint>>>,
   'getPublicationDeletes' : ActorMethod<
     [],
@@ -231,6 +232,7 @@ export interface OrchestratorMock {
     Array<SubscriptionUpdateResult>
   >,
   'set_scenario' : ActorMethod<[string], undefined>,
+  'simulateBroadcasterReady' : ActorMethod<[Principal], undefined>,
 }
 export type PublicationDeleteError = { 'GenericError' : GenericError } |
   { 'NotFound' : null } |

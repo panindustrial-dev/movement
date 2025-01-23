@@ -112,8 +112,8 @@ type EventNotification =
    eventId: nat;
    filter: opt text;
    headers: opt ICRC16Map__1;
-   id: nat;
    namespace: text;
+   notificationId: nat;
    prevEventId: opt nat;
    source: principal;
    timestamp: nat;
@@ -122,10 +122,10 @@ type EmitableEvent =
  record {
    broadcaster: principal;
    data: ICRC16;
+   eventId: nat;
    headers: opt ICRC16Map;
-   id: nat;
    namespace: text;
-   prevId: opt nat;
+   prevEventId: opt nat;
    source: principal;
    timestamp: nat;
  };
