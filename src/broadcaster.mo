@@ -156,6 +156,7 @@ shared (deployer) actor class MVEvent<system>(args: ?{
           var handleEventOrder = null;
           var handleNotificationError = null;
           var handleNotificationPrice = null;
+          var onSubscriptionReady = null;
         };
       });
 
@@ -179,12 +180,14 @@ shared (deployer) actor class MVEvent<system>(args: ?{
       args = icrc72PublisherInitArgs;
       pullEnvironment = ?(func() : ICRC72Publisher.Environment{
         {      
-          addRecord = null;
-          generateId = null;
+          var addRecord = null;
+          var generateId = null;
           icrc72Subscriber = icrc72_subscriber();
-          icrc72OrchestratorCanister = orchestratorPrincipal;
-          onEventPublishError = null;
-          onEventPublished = null;
+          var icrc72OrchestratorCanister = orchestratorPrincipal;
+          var onEventPublishError = null;
+          var onEventPublished = null;
+          var onPublisherReady = null;
+          var willPublsh = null;
           tt = tt();
         };
       });
@@ -487,9 +490,6 @@ shared (deployer) actor class MVEvent<system>(args: ?{
 
     debug if(debug_channel.init) D.print("CANISTER: Initializing - broadcaster ready");
 
-
-    await icrc72_publisher().initializeSubscriptions();
-    await icrc72_subscriber().initializeSubscriptions();
     await icrc72_broadcaster().initializeSubscriptions();
     return;
   };

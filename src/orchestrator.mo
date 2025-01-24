@@ -142,6 +142,7 @@ shared (deployer) actor class MVEvent<system>(args: ?{
           var handleEventOrder = null;
           var handleNotificationError = null;
           var handleNotificationPrice = null;
+          var onSubscriptionReady = null;
         };
       });
 
@@ -171,6 +172,7 @@ shared (deployer) actor class MVEvent<system>(args: ?{
           var icrc72OrchestratorCanister = thisPrincipal;
           var onEventPublishError = null;
           var onEventPublished = null;
+          var onPublisherReady = null;
           tt = tt();
         };
       });
@@ -368,7 +370,6 @@ shared (deployer) actor class MVEvent<system>(args: ?{
   public func initialize() : async () {
     ignore Timer.setTimer<system>(#nanoseconds(0), icrc72_subscriber().initializeSubscriptions);();
     ignore Timer.setTimer<system>(#nanoseconds(0), icrc72_publisher().initializeSubscriptions);();
-    
   };
 
 

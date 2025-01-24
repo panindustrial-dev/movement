@@ -420,11 +420,7 @@ type ICRC16Property =
    name: text;
    value: ICRC16;
  };
-type ICRC16Map__4 = 
- vec record {
-       text;
-       ICRC16__4;
-     };
+type ICRC16Map__4 = vec ICRC16MapItem;
 type ICRC16Map__3 = 
  vec record {
        text;
@@ -440,6 +436,11 @@ type ICRC16Map__1 =
        text;
        ICRC16__1;
      };
+type ICRC16MapItem = 
+ record {
+   text;
+   ICRC16__4;
+ };
 type ICRC16Map = 
  vec record {
        text;
@@ -539,8 +540,8 @@ type EventNotificationRecordShared__1 =
    eventId: nat;
    filter: opt text;
    headers: opt ICRC16Map__3;
+   namespace: text;
    notificationId: nat;
-   publication: text;
    stake: StakeRecord;
    timerId: opt nat;
  };
@@ -552,8 +553,8 @@ type EventNotificationRecordShared =
    eventId: nat;
    filter: opt text;
    headers: opt ICRC16Map__3;
+   namespace: text;
    notificationId: nat;
-   publication: text;
    stake: StakeRecord;
    timerId: opt nat;
  };

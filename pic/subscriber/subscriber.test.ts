@@ -346,7 +346,7 @@ describe("test subscriber", () => {
       data: { Map: [] },
       headers: [
         [
-          ["broadcaster", {Blob: orchestrator_fixture.canisterId.toUint8Array()}] as [string, ICRC16]
+          ["icrc72:broadcaster", {Blob: orchestrator_fixture.canisterId.toUint8Array()}] as [string, ICRC16]
         ] as ICRC16Map
       ],
       source: orchestrator_fixture.canisterId,

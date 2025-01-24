@@ -131,6 +131,7 @@ shared (deployer) actor class Publisher<system>(args: ?{
           var handleEventOrder = null;
           var handleNotificationError = null;
           var handleNotificationPrice = null;
+          var onSubscriptionReady = null;
         };
       });
 
@@ -175,6 +176,7 @@ shared (deployer) actor class Publisher<system>(args: ?{
           var icrc72OrchestratorCanister = orchestratorPrincipal;
           var onEventPublishError = ?handlePublishError;
           var onEventPublished = ?handlePublished;
+          var onPublisherReady = null;
           tt = tt();
         };
       });

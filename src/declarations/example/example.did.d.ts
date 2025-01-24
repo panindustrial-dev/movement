@@ -26,26 +26,25 @@ export type ConfirmMessageItemResult = { 'Ok' : bigint } |
 export type ConfirmMessageResult = { 'allAccepted' : null } |
   { 'itemized' : Array<ConfirmMessageItemResult> };
 export interface EmitableEvent {
-  'id' : bigint,
+  'eventId' : bigint,
   'broadcaster' : Principal,
   'source' : Principal,
   'data' : ICRC16,
   'headers' : [] | [ICRC16Map],
+  'prevEventId' : [] | [bigint],
   'timestamp' : bigint,
-  'prevId' : [] | [bigint],
   'namespace' : string,
 }
 export interface Event {
-  'id' : bigint,
+  'eventId' : bigint,
   'source' : Principal,
   'data' : ICRC16__2,
   'headers' : [] | [ICRC16Map__2],
+  'prevEventId' : [] | [bigint],
   'timestamp' : bigint,
-  'prevId' : [] | [bigint],
   'namespace' : string,
 }
 export interface EventNotification {
-  'id' : bigint,
   'eventId' : bigint,
   'source' : Principal,
   'data' : ICRC16__3,
@@ -53,6 +52,7 @@ export interface EventNotification {
   'prevEventId' : [] | [bigint],
   'filter' : [] | [string],
   'timestamp' : bigint,
+  'notificationId' : bigint,
   'namespace' : string,
 }
 export interface GenericError { 'message' : string, 'error_code' : bigint }

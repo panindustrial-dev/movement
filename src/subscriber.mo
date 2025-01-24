@@ -158,6 +158,7 @@ shared (deployer) actor class Subscriber<system>(args: ?{
           var handleNotificationPrice = ?(func<system>(state: ICRC72Subscriber.CurrentState, environment: ICRC72Subscriber.Environment, eventNotification: ICRC72Subscriber.EventNotification) : Nat {
             return 0;
           }); 
+          var onSubscriptionReady = null;
           var handleNotificationError = ?(func<system>(event: ICRC72Subscriber.EventNotification, error: Error) : () {
             D.print("Error in Notification: " # debug_show(event) # " " # Error.message(error));
 

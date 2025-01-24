@@ -139,7 +139,8 @@ export const idlFactory = ({ IDL }) => {
       'Class' : IDL.Vec(ICRC16Property__3),
     })
   );
-  const ICRC16Map__3 = IDL.Vec(IDL.Tuple(IDL.Text, ICRC16__3));
+  const ICRC16MapItem = IDL.Tuple(IDL.Text, ICRC16__3);
+  const ICRC16Map__3 = IDL.Vec(ICRC16MapItem);
   const SubscriptionRecord = IDL.Record({
     'id' : IDL.Nat,
     'config' : ICRC16Map__3,

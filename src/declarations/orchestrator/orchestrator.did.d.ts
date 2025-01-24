@@ -97,9 +97,10 @@ export type ICRC16 = { 'Int' : bigint } |
   { 'ValueMap' : Array<[ICRC16, ICRC16]> } |
   { 'Class' : Array<ICRC16Property> };
 export type ICRC16Map = Array<[string, ICRC16]>;
+export type ICRC16MapItem = [string, ICRC16__3];
 export type ICRC16Map__1 = Array<[string, ICRC16__1]>;
 export type ICRC16Map__2 = Array<[string, ICRC16__2]>;
-export type ICRC16Map__3 = Array<[string, ICRC16__3]>;
+export type ICRC16Map__3 = Array<ICRC16MapItem>;
 export type ICRC16Map__4 = Array<[string, ICRC16__4]>;
 export interface ICRC16Property {
   'value' : ICRC16,

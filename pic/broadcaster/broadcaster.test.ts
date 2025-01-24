@@ -329,7 +329,7 @@ describe("test broadcaster", () => {
    console.log("lastEventId", JSON.stringify(state.icrc72Subscriber.lastEventId, dataItemStringify, 2));
    expect(state.icrc72Subscriber.lastEventId.length).toEqual(1);
    expect(state.icrc72Subscriber.lastEventId[0][0]).toEqual("icrc72:broadcaster:sys:lqy7q-dh777-77777-aaaaq-cai");
-   expect(state.icrc72Subscriber.lastEventId[0][1]).toEqual([[779n, 1n]]);
+   expect(state.icrc72Subscriber.lastEventId[0][1]).toEqual([[777n, 1n]]);
 
    let result2 = await broadcaster_fixture.actor.simulatePublisherAssignment("anamespace2", 2n,orchestrator_fixture.canisterId);
    let result3 = await broadcaster_fixture.actor.simulatePublisherAssignment("anamespace3", 3n,  orchestrator_fixture.canisterId);
@@ -452,7 +452,7 @@ describe("test broadcaster", () => {
   console.log("lastEventId", JSON.stringify(state.icrc72Subscriber.lastEventId, dataItemStringify, 2));
   expect(state.icrc72Subscriber.lastEventId.length).toEqual(1);
   expect(state.icrc72Subscriber.lastEventId[0][0]).toEqual("icrc72:broadcaster:sys:lqy7q-dh777-77777-aaaaq-cai");
-  expect(state.icrc72Subscriber.lastEventId[0][1]).toEqual([[779n, 1n]]);
+  expect(state.icrc72Subscriber.lastEventId[0][1]).toEqual([[777n, 1n]]);
 
   let result2 = await broadcaster_fixture.actor.simulatePublisherAssignment("anamespace2", 2n,orchestrator_fixture.canisterId);
   let result3 = await broadcaster_fixture.actor.simulatePublisherAssignment("anamespace3", 3n,  orchestrator_fixture.canisterId);
@@ -677,7 +677,7 @@ it("test broadcaster register and deregisteres relay success", testBroadcasterRe
   console.log("lastEventId", JSON.stringify(state.icrc72Subscriber.lastEventId, dataItemStringify, 2));
   expect(state.icrc72Subscriber.lastEventId.length).toEqual(1);
   expect(state.icrc72Subscriber.lastEventId[0][0]).toEqual("icrc72:broadcaster:sys:lqy7q-dh777-77777-aaaaq-cai");
-  expect(state.icrc72Subscriber.lastEventId[0][1]).toEqual([[779n, 1n]]);
+  expect(state.icrc72Subscriber.lastEventId[0][1]).toEqual([[777n, 1n]]);
 
   let result2 = await broadcaster_fixture.actor.simulatePublisherAssignment("anamespace2", 2n, orchestrator_fixture.canisterId);
   let result3 = await broadcaster_fixture.actor.simulatePublisherAssignment("anamespace3", 3n,  orchestrator_fixture.canisterId);

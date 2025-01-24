@@ -245,6 +245,7 @@ shared (deployer) actor class MVEvent<system>(args: ?{
           var handleEventOrder = null;
           var handleNotificationError = null;
           var handleNotificationPrice = null;
+          var onSubscriptionReady = null;
         };
       });
 
@@ -270,10 +271,11 @@ shared (deployer) actor class MVEvent<system>(args: ?{
         {      
           var addRecord = null;
           var generateId = null;
-          var icrc72Subscriber = icrc72_subscriber();
+          icrc72Subscriber = icrc72_subscriber();
           var icrc72OrchestratorCanister = getOrchestrator();
           var onEventPublishError = null;
           var onEventPublished = null;
+          var onPublisherReady = null;
           tt = tt();
         };
       });

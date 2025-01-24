@@ -66,7 +66,7 @@ export interface EventNotificationRecordShared {
   'bSent' : [] | [bigint],
   'notificationId' : bigint,
   'timerId' : [] | [bigint],
-  'publication' : string,
+  'namespace' : string,
 }
 export interface EventNotificationRecordShared__1 {
   'bConfirmed' : [] | [bigint],
@@ -78,7 +78,7 @@ export interface EventNotificationRecordShared__1 {
   'bSent' : [] | [bigint],
   'notificationId' : bigint,
   'timerId' : [] | [bigint],
-  'publication' : string,
+  'namespace' : string,
 }
 export interface EventNotification__1 {
   'eventId' : bigint,
@@ -149,10 +149,11 @@ export type ICRC16 = { 'Int' : bigint } |
   { 'ValueMap' : Array<[ICRC16, ICRC16]> } |
   { 'Class' : Array<ICRC16Property> };
 export type ICRC16Map = Array<[string, ICRC16]>;
+export type ICRC16MapItem = [string, ICRC16__4];
 export type ICRC16Map__1 = Array<[string, ICRC16__1]>;
 export type ICRC16Map__2 = Array<[string, ICRC16__2]>;
 export type ICRC16Map__3 = Array<[string, ICRC16__3]>;
-export type ICRC16Map__4 = Array<[string, ICRC16__4]>;
+export type ICRC16Map__4 = Array<ICRC16MapItem>;
 export interface ICRC16Property {
   'value' : ICRC16,
   'name' : string,

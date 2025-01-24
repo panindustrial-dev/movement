@@ -128,7 +128,7 @@ export const idlFactory = ({ IDL }) => {
     'bSent' : IDL.Opt(IDL.Nat),
     'notificationId' : IDL.Nat,
     'timerId' : IDL.Opt(IDL.Nat),
-    'publication' : IDL.Text,
+    'namespace' : IDL.Text,
   });
   const Event__1 = IDL.Record({
     'eventId' : IDL.Nat,
@@ -284,7 +284,8 @@ export const idlFactory = ({ IDL }) => {
       'Class' : IDL.Vec(ICRC16Property__4),
     })
   );
-  const ICRC16Map__4 = IDL.Vec(IDL.Tuple(IDL.Text, ICRC16__4));
+  const ICRC16MapItem = IDL.Tuple(IDL.Text, ICRC16__4);
+  const ICRC16Map__4 = IDL.Vec(ICRC16MapItem);
   const SubscriptionRecord = IDL.Record({
     'id' : IDL.Nat,
     'config' : ICRC16Map__4,
@@ -378,7 +379,7 @@ export const idlFactory = ({ IDL }) => {
     'bSent' : IDL.Opt(IDL.Nat),
     'notificationId' : IDL.Nat,
     'timerId' : IDL.Opt(IDL.Nat),
-    'publication' : IDL.Text,
+    'namespace' : IDL.Text,
   });
   const SubscriberRecordShared = IDL.Record({
     'skipTracker' : IDL.Int,

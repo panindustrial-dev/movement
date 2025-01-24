@@ -86,7 +86,8 @@ export const idlFactory = ({ IDL }) => {
       'Class' : IDL.Vec(ICRC16Property__2),
     })
   );
-  const ICRC16Map__3 = IDL.Vec(IDL.Tuple(IDL.Text, ICRC16__2));
+  const ICRC16MapItem = IDL.Tuple(IDL.Text, ICRC16__2);
+  const ICRC16Map__3 = IDL.Vec(ICRC16MapItem);
   const SubscriptionRecord = IDL.Record({
     'id' : IDL.Nat,
     'config' : ICRC16Map__3,
@@ -175,7 +176,7 @@ export const idlFactory = ({ IDL }) => {
     'notificationId' : IDL.Nat,
     'namespace' : IDL.Text,
   });
-  const ICRC16Map__2 = IDL.Vec(IDL.Tuple(IDL.Text, ICRC16__2));
+  const ICRC16Map__2 = IDL.Vec(ICRC16MapItem);
   const GenericError = IDL.Record({
     'message' : IDL.Text,
     'error_code' : IDL.Nat,

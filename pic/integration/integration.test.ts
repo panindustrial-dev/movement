@@ -217,7 +217,7 @@ describe("integration test", () => {
           if(thisMessage[0].toText() == broadcasterFixtures2.canisterId.toText()){
             continue;
           }
-          if(thisMessage[0].toText() == broadcasterFixtures2.canisterId.toText()){
+          if(thisMessage[0].toText() == broadcasterFixtures3.canisterId.toText()){
             continue;
           }
           
@@ -267,16 +267,25 @@ describe("integration test", () => {
             continue;
           }
 
+          //confirms between broadcasters happens for relay notification relay
+          if(thisMessage[0].toText() == broadcasterFixtures1.canisterId.toText()){
+            continue;
+          }
+          if(thisMessage[0].toText() == broadcasterFixtures2.canisterId.toText()){
+            continue;
+          }
+          if(thisMessage[0].toText() == broadcasterFixtures3.canisterId.toText()){
+            continue;
+          }
+
           
           //console.log("subnets",foundSubnet1, foundSubnet2);
-          console.log("failed verify handle notification", thisMessage[0].toText(), canister.toText(),foundSubnet1?.toText() ,foundSubnet2?.toText(), JSON.stringify(thisMessage[1], dataItemStringify,2));
+          console.log("failed verify handle confirmation", thisMessage[0].toText(), canister.toText(),foundSubnet1?.toText() ,foundSubnet2?.toText(), JSON.stringify(thisMessage[1], dataItemStringify,2));
           return false;
         };
 
         return true;
       };
-
-
 
         // Step 1: Initialize the Orchestrator
       const orchestratorFixture = await pic.setupCanister<OrchestratorService>({
@@ -651,7 +660,7 @@ describe("integration test", () => {
         } else {
           //i really think this should be 8
           //expect(stats.subscriptions.length).toEqual(subscribersPerSubnet + 3 + 1);
-          expect(stats.subscriptions.length).toEqual(6);
+          expect(stats.subscriptions.length).toEqual(8);
         };
         
       }
@@ -741,7 +750,7 @@ describe("integration test", () => {
       for (const broadcasterFixture of broadcasterFixtures) {
         const confirmations = await broadcasterFixture.actor.getRecievedConfirmations();
         console.log(`Broadcaster ${broadcasterFixture.canisterId} received confirmations:`, confirmations.length);
-        console.log(`Broadcaster ${broadcasterFixture.canisterId} received confirmations:`, confirmations);
+        console.log(`Broadcaster ${broadcasterFixture.canisterId} received confirmations:`, JSON.stringify(confirmations, dataItemStringify,2));
         expect(confirmations.length).toBeGreaterThanOrEqual(2);
 
         expect(await validateHandledConfirmations(broadcasterFixture.canisterId, confirmations)).toBe(true);

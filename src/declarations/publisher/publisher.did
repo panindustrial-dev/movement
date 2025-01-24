@@ -336,11 +336,7 @@ type ICRC16Property =
    name: text;
    value: ICRC16;
  };
-type ICRC16Map__3 = 
- vec record {
-       text;
-       ICRC16__3;
-     };
+type ICRC16Map__3 = vec ICRC16MapItem;
 type ICRC16Map__2 = 
  vec record {
        text;
@@ -351,6 +347,11 @@ type ICRC16Map__1 =
        text;
        ICRC16__1;
      };
+type ICRC16MapItem = 
+ record {
+   text;
+   ICRC16__3;
+ };
 type ICRC16Map = 
  vec record {
        text;
