@@ -140,6 +140,12 @@ type Stats =
    confirmTimer: opt nat;
    error: opt text;
    icrc72OrchestratorCanister: principal;
+   icrc85:
+    record {
+      activeActions: nat;
+      lastActionReported: opt nat;
+      nextCycleActionId: opt nat;
+    };
    lastEventId: vec record {
                       text;
                       vec record {

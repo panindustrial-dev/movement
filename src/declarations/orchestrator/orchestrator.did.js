@@ -159,6 +159,11 @@ export const idlFactory = ({ IDL }) => {
       'icrc75' : ICRC75Item__1,
     }),
     'confirmTimer' : IDL.Opt(IDL.Nat),
+    'icrc85' : IDL.Record({
+      'activeActions' : IDL.Nat,
+      'nextCycleActionId' : IDL.Opt(IDL.Nat),
+      'lastActionReported' : IDL.Opt(IDL.Nat),
+    }),
     'error' : IDL.Opt(IDL.Text),
     'confirmAccumulator' : IDL.Vec(
       IDL.Tuple(IDL.Principal, IDL.Vec(IDL.Tuple(IDL.Nat, IDL.Nat)))

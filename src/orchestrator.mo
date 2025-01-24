@@ -143,6 +143,7 @@ shared (deployer) actor class MVEvent<system>(args: ?{
           var handleNotificationError = null;
           var handleNotificationPrice = null;
           var onSubscriptionReady = null;
+          advanced = null;
         };
       });
 

@@ -847,6 +847,83 @@ describe("test subscriber", () => {
     //todo: check the value and details of the records
   }
 
+  async function ovsRuns() {
+    await setUpSubscriber("default");
+
+    await pic.tick(5);
+    await pic.advanceTime(60_000);
+    await pic.tick(5);
+    const namespace = "syncListenerNamespace";
+
+    // Register the synchronous listener
+    let reg = await subscriber_fixture.actor.registerExecutionListenerSync([]);
+
+    // Fetch the Subscriber's state to verify listener registration
+    const state = await subscriber_fixture.actor.get_stats();
+
+    console.log("state", state.icrc85);
+
+    // Assuming the state has a 'listeners' property with details
+    const registeredListener = state.subscriptions.find((listener: any) => listener[1].namespace === namespace);
+
+    expect(registeredListener).toBeDefined();
+
+    // Simulate an event
+    const testEvent = {
+      namespace: namespace,
+      data: {Map: []},
+      headers: [] as [],
+      source: orchestrator_fixture.canisterId,
+      notificationId: 1n,
+      eventId: 1n,
+      prevEventId: [] as [] | [bigint], 
+      filter: [] as [] | [string],
+      timestamp: await getTimeNanos(),
+    };
+
+    
+
+    await subscriber_fixture.actor.setIdentity(admin);
+
+    let result = await subscriber_fixture.actor.simulateSubscriptionCreation(true,"syncListenerNamespace", [
+      []]);
+
+
+    console.log("result",result);
+    
+
+    
+
+    let mockHandler = await subscriber_fixture.actor.registerExecutionListenerSyncCalled();
+
+    await pic.tick(5);
+    await pic.advanceTime(60_000);
+
+    // Emit the event to trigger the listener
+    for(let i = 0; i < 10; i++) {
+      await subscriber_fixture.actor.simulate_notification([] ,[testEvent]);
+    };
+
+    await pic.tick(5);
+    await pic.advanceTime(60_000);
+
+    
+
+    let statsBeforeCycles = await subscriber_fixture.actor.get_stats();
+    console.log("cycles", await pic.getCyclesBalance(subscriber_fixture.canisterId));
+
+    console.log("statsPost",statsBeforeCycles);
+    await pic.advanceTime(60_000 *60*24*45);
+    await pic.tick(5);
+
+    let statsPostCycles = await subscriber_fixture.actor.get_stats();
+    console.log("cycles", await pic.getCyclesBalance(subscriber_fixture.canisterId));
+
+    console.log("statsPostCycles",statsPostCycles);
+
+    
+  }
+
   // Register the test functions within Jest's 'it' blocks
   it(`can say hello`, async () => {
     await setUpSubscriber("default");
@@ -881,6 +958,10 @@ describe("test subscriber", () => {
 
   it("should emit notification event",
       testNotificationEvent);
+
+
+  it"ovs runs",
+    ovsRuns);
 
 
   

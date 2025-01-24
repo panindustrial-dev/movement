@@ -132,6 +132,7 @@ shared (deployer) actor class Publisher<system>(args: ?{
           var handleNotificationError = null;
           var handleNotificationPrice = null;
           var onSubscriptionReady = null;
+          advanced = null;
         };
       });
 

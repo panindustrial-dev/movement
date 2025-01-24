@@ -165,6 +165,7 @@ shared (deployer) actor class Subscriber<system>(args: ?{
             Vector.add(errors, Error.message(error));
             return;
           });
+          advanced = null;
         };
       });
 

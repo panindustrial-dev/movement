@@ -407,6 +407,11 @@ export interface Stats__2 {
   'validBroadcasters' : { 'list' : Array<Principal> } |
     { 'icrc75' : ICRC75Item },
   'confirmTimer' : [] | [bigint],
+  'icrc85' : {
+    'activeActions' : bigint,
+    'nextCycleActionId' : [] | [bigint],
+    'lastActionReported' : [] | [bigint],
+  },
   'error' : [] | [string],
   'confirmAccumulator' : Array<[Principal, Array<[bigint, bigint]>]>,
   'broadcasters' : Array<[bigint, Array<Principal>]>,

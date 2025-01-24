@@ -149,6 +149,7 @@ shared (deployer) actor class MVEvent<system>(args: ?{
       args = icrc72SubscriberInitArgs;
       pullEnvironment = ?(func() : ICRC72Subscriber.Environment{
         {      
+          advanced = null;
           var addRecord = null;
           var generateId = null;
           var icrc72OrchestratorCanister = orchestratorPrincipal;
@@ -188,6 +189,7 @@ shared (deployer) actor class MVEvent<system>(args: ?{
           var onEventPublished = null;
           var onPublisherReady = null;
           var willPublsh = null;
+          advanced = null;
           tt = tt();
         };
       });
