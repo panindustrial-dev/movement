@@ -960,7 +960,7 @@ describe("test subscriber", () => {
       testNotificationEvent);
 
 
-  it"ovs runs",
+  it("ovs runs",
     ovsRuns);
 
 
