@@ -309,6 +309,7 @@ export const idlFactory = ({ IDL }) => {
   });
   const Stats__2 = IDL.Record({
     'tt' : Stats__3,
+    'log' : IDL.Vec(IDL.Text),
     'subscriptions' : IDL.Vec(IDL.Tuple(IDL.Nat, SubscriptionRecord)),
     'readyForSubscription' : IDL.Bool,
     'backlogs' : IDL.Vec(
@@ -341,6 +342,7 @@ export const idlFactory = ({ IDL }) => {
   const ActionId__1 = IDL.Record({ 'id' : IDL.Nat, 'time' : Time });
   const Stats__1 = IDL.Record({
     'tt' : Stats__3,
+    'log' : IDL.Vec(IDL.Text),
     'icrc72Subscriber' : Stats__2,
     'error' : IDL.Opt(IDL.Text),
     'orchestrator' : IDL.Principal,
@@ -362,6 +364,11 @@ export const idlFactory = ({ IDL }) => {
     'filter' : IDL.Opt(IDL.Text),
     'config' : ICRC16Map__3,
     'namespace' : IDL.Text,
+  });
+  const Namespace__1 = IDL.Text;
+  const ICRC75Item__1 = IDL.Record({
+    'principal' : IDL.Principal,
+    'namespace' : Namespace__1,
   });
   const EventNotification__2 = IDL.Record({
     'eventId' : IDL.Nat,
@@ -405,19 +412,35 @@ export const idlFactory = ({ IDL }) => {
     ),
     'stakeIndex' : IDL.Vec(IDL.Tuple(StakeRecord, IDL.Principal)),
     'registeredRelay' : IDL.Vec(
-      IDL.Tuple(IDL.Principal, IDL.Opt(IDL.Vec(IDL.Text)))
+      IDL.Tuple(
+        IDL.Principal,
+        IDL.Opt(
+          IDL.Vec(
+            IDL.Tuple(
+              IDL.Principal,
+              IDL.Opt(IDL.Text),
+              IDL.Opt(IDL.Tuple(IDL.Nat, IDL.Nat)),
+            )
+          )
+        ),
+      )
     ),
     'namespace' : IDL.Text,
     'registeredRelayer' : IDL.Vec(IDL.Principal),
   });
   const Stats = IDL.Record({
     'tt' : Stats__3,
+    'log' : IDL.Vec(IDL.Text),
     'eventStore' : IDL.Vec(
       IDL.Tuple(IDL.Text, IDL.Vec(IDL.Tuple(IDL.Nat, EventRecordShared)))
     ),
     'icrc72Publisher' : Stats__1,
     'subscriptions' : IDL.Vec(IDL.Tuple(IDL.Nat, SubscriptionRecordShared)),
     'icrc72Subscriber' : Stats__2,
+    'validBroadcasters' : IDL.Variant({
+      'list' : IDL.Vec(IDL.Principal),
+      'icrc75' : ICRC75Item__1,
+    }),
     'messageAccumulator' : IDL.Vec(
       IDL.Tuple(
         IDL.Principal,
@@ -443,9 +466,15 @@ export const idlFactory = ({ IDL }) => {
     'message' : IDL.Text,
     'error_code' : IDL.Nat,
   });
+  const ConfirmError = IDL.Variant({
+    'GenericError' : GenericError,
+    'Unauthorized' : IDL.Null,
+    'EventNotFound' : IDL.Null,
+    'NotificationNotFound' : IDL.Null,
+  });
   const ConfirmMessageItemResult = IDL.Variant({
     'Ok' : IDL.Nat,
-    'Err' : GenericError,
+    'Err' : ConfirmError,
   });
   const ConfirmMessageResult = IDL.Variant({
     'allAccepted' : IDL.Null,

@@ -79,6 +79,7 @@ type Stats__2 =
                             nat;
                           };
                     };
+   log: vec text;
    readyForSubscription: bool;
    subscriptions: vec record {
                         nat;
@@ -101,6 +102,7 @@ type Stats__1 =
    eventsProcessing: bool;
    icrc72OrchestratorCanister: principal;
    icrc72Subscriber: Stats__2;
+   log: vec text;
    orchestrator: principal;
    pendingEvents: vec EmitableEvent;
    previousEventIds: vec record {
@@ -130,6 +132,7 @@ type Stats =
    icrc72OrchestratorCanister: principal;
    icrc72Publisher: Stats__1;
    icrc72Subscriber: Stats__2;
+   log: vec text;
    maxMessages: opt nat;
    messageAccumulator:
     vec record {
@@ -163,6 +166,10 @@ type Stats =
                         SubscriptionRecordShared;
                       };
    tt: Stats__3;
+   validBroadcasters: variant {
+                        icrc75: ICRC75Item__1;
+                        list: vec principal;
+                      };
  };
 type StakeRecord = 
  record {
@@ -186,10 +193,19 @@ type PublicationRecordShared =
    id: nat;
    namespace: text;
    registeredPublishers: vec principal;
-   registeredRelay: vec record {
-                          principal;
-                          opt vec text;
-                        };
+   registeredRelay:
+    vec
+     record {
+       principal;
+       opt vec record {
+                 principal;
+                 opt text;
+                 opt record {
+                       nat;
+                       nat;
+                     };
+               };
+     };
    registeredRelayer: vec principal;
    registeredSubscribers: vec record {
                                 principal;
@@ -209,6 +225,7 @@ type PublicationRecord =
    id: nat;
    namespace: text;
  };
+type Namespace__1 = text;
 type Namespace = text;
 type MVEvent = 
  service {
@@ -265,6 +282,11 @@ type InitArgs__1 = record {
                               };
                        };};
 type InitArgs = record {name: text;};
+type ICRC75Item__1 = 
+ record {
+   namespace: Namespace__1;
+   "principal": principal;
+ };
 type ICRC75Item = 
  record {
    namespace: Namespace;
@@ -604,8 +626,15 @@ type ConfirmMessageResult =
  };
 type ConfirmMessageItemResult = 
  variant {
-   Err: GenericError;
+   Err: ConfirmError;
    Ok: nat;
+ };
+type ConfirmError = 
+ variant {
+   EventNotFound;
+   GenericError: GenericError;
+   NotificationNotFound;
+   Unauthorized;
  };
 type Args = opt ArgList;
 type ArgList = 

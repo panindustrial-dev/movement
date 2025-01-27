@@ -168,6 +168,7 @@ type Stats__3 =
                             nat;
                           };
                     };
+   log: vec text;
    readyForSubscription: bool;
    subscriptions: vec record {
                         nat;
@@ -190,6 +191,7 @@ type Stats__2 =
    eventsProcessing: bool;
    icrc72OrchestratorCanister: principal;
    icrc72Subscriber: Stats__3;
+   log: vec text;
    orchestrator: principal;
    pendingEvents: vec EmitableEvent;
    previousEventIds: vec record {
@@ -212,8 +214,13 @@ type Stats__1 =
                        principal;
                        BroadcasterRecordShared;
                      };
+   broadcastersBySubnet: vec record {
+                               principal;
+                               vec principal;
+                             };
    defaultTake: nat;
    icrc72Publisher: Stats__2;
+   log: vec text;
    maxTake: nat;
    nextPublicationID: nat;
    nextSubscriptionID: nat;

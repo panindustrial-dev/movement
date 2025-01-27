@@ -153,6 +153,7 @@ type Stats =
                             nat;
                           };
                     };
+   log: vec text;
    readyForSubscription: bool;
    subscriptions: vec record {
                         nat;

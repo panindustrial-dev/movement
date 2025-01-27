@@ -3,8 +3,12 @@ import type { ActorMethod } from '@dfinity/agent';
 import type { IDL } from '@dfinity/candid';
 
 export interface BroadcasterInfo { 'broadcaster' : Principal, 'stats' : Stats }
+export type ConfirmError = { 'GenericError' : GenericError__1 } |
+  { 'Unauthorized' : null } |
+  { 'EventNotFound' : null } |
+  { 'NotificationNotFound' : null };
 export type ConfirmMessageItemResult = { 'Ok' : bigint } |
-  { 'Err' : GenericError__1 };
+  { 'Err' : ConfirmError };
 export type ConfirmMessageResult = { 'allAccepted' : null } |
   { 'itemized' : Array<ConfirmMessageItemResult> };
 export interface Event {

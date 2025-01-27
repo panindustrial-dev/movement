@@ -141,6 +141,7 @@ export interface InitArgs { 'name' : string }
 export type Namespace = string;
 export interface Stats {
   'tt' : Stats__1,
+  'log' : Array<string>,
   'subscriptions' : Array<[bigint, SubscriptionRecord]>,
   'readyForSubscription' : boolean,
   'backlogs' : Array<[bigint, Array<[bigint, EventNotification__1]>]>,

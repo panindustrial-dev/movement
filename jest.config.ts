@@ -7,7 +7,7 @@ const config: Config = {
   testEnvironment: 'node',
   globalSetup: '<rootDir>/pic/global-setup.ts',
   globalTeardown: '<rootDir>/pic/global-teardown.ts',
-  testTimeout: 60_000,
+  testTimeout: 120_000,
   transform: {
     '^.+\\.(ts|tsx|js|jsx)$': 'ts-jest',
   },

@@ -53,6 +53,7 @@ type Stats__1 =
                             nat;
                           };
                     };
+   log: vec text;
    readyForSubscription: bool;
    subscriptions: vec record {
                         nat;
@@ -75,6 +76,7 @@ type Stats =
    eventsProcessing: bool;
    icrc72OrchestratorCanister: principal;
    icrc72Subscriber: Stats__1;
+   log: vec text;
    orchestrator: principal;
    pendingEvents: vec EmitableEvent;
    previousEventIds: vec record {

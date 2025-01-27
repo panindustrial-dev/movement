@@ -397,8 +397,15 @@ type ConfirmMessageResult =
  };
 type ConfirmMessageItemResult = 
  variant {
-   Err: GenericError__1;
+   Err: ConfirmError;
    Ok: nat;
+ };
+type ConfirmError = 
+ variant {
+   EventNotFound;
+   GenericError: GenericError__1;
+   NotificationNotFound;
+   Unauthorized;
  };
 type BroadcasterInfo = 
  record {

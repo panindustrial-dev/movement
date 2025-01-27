@@ -426,6 +426,7 @@ export type StatisticsFilter = [] | [[] | [Array<string>]];
 export type Stats = Array<[string, ICRC16__1]>;
 export interface Stats__1 {
   'tt' : Stats__4,
+  'log' : Array<string>,
   'icrc72Publisher' : Stats__2,
   'subscriptions' : Array<[bigint, SubscriptionRecordShared]>,
   'defaultTake' : bigint,
@@ -434,10 +435,12 @@ export interface Stats__1 {
   'subnet' : [] | [Principal],
   'publications' : Array<[bigint, PublicationRecordShared]>,
   'nextPublicationID' : bigint,
+  'broadcastersBySubnet' : Array<[Principal, Array<Principal>]>,
   'maxTake' : bigint,
 }
 export interface Stats__2 {
   'tt' : Stats__4,
+  'log' : Array<string>,
   'icrc72Subscriber' : Stats__3,
   'error' : [] | [string],
   'orchestrator' : Principal,
@@ -452,6 +455,7 @@ export interface Stats__2 {
 }
 export interface Stats__3 {
   'tt' : Stats__4,
+  'log' : Array<string>,
   'subscriptions' : Array<[bigint, SubscriptionRecord]>,
   'readyForSubscription' : boolean,
   'backlogs' : Array<[bigint, Array<[bigint, EventNotification__1]>]>,

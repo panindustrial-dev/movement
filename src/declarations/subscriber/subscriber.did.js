@@ -111,6 +111,7 @@ export const idlFactory = ({ IDL }) => {
   });
   const Stats = IDL.Record({
     'tt' : Stats__1,
+    'log' : IDL.Vec(IDL.Text),
     'subscriptions' : IDL.Vec(IDL.Tuple(IDL.Nat, SubscriptionRecord)),
     'readyForSubscription' : IDL.Bool,
     'backlogs' : IDL.Vec(

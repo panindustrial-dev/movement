@@ -149,6 +149,7 @@ export const idlFactory = ({ IDL }) => {
   });
   const Stats__3 = IDL.Record({
     'tt' : Stats__4,
+    'log' : IDL.Vec(IDL.Text),
     'subscriptions' : IDL.Vec(IDL.Tuple(IDL.Nat, SubscriptionRecord)),
     'readyForSubscription' : IDL.Bool,
     'backlogs' : IDL.Vec(
@@ -181,6 +182,7 @@ export const idlFactory = ({ IDL }) => {
   const ActionId__1 = IDL.Record({ 'id' : IDL.Nat, 'time' : Time });
   const Stats__2 = IDL.Record({
     'tt' : Stats__4,
+    'log' : IDL.Vec(IDL.Text),
     'icrc72Subscriber' : Stats__3,
     'error' : IDL.Opt(IDL.Text),
     'orchestrator' : IDL.Principal,
@@ -308,6 +310,7 @@ export const idlFactory = ({ IDL }) => {
   });
   const Stats__1 = IDL.Record({
     'tt' : Stats__4,
+    'log' : IDL.Vec(IDL.Text),
     'icrc72Publisher' : Stats__2,
     'subscriptions' : IDL.Vec(IDL.Tuple(IDL.Nat, SubscriptionRecordShared)),
     'defaultTake' : IDL.Nat,
@@ -316,6 +319,9 @@ export const idlFactory = ({ IDL }) => {
     'subnet' : IDL.Opt(IDL.Principal),
     'publications' : IDL.Vec(IDL.Tuple(IDL.Nat, PublicationRecordShared)),
     'nextPublicationID' : IDL.Nat,
+    'broadcastersBySubnet' : IDL.Vec(
+      IDL.Tuple(IDL.Principal, IDL.Vec(IDL.Principal))
+    ),
     'maxTake' : IDL.Nat,
   });
   const PublicationIdentifier = IDL.Variant({

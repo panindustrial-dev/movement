@@ -288,6 +288,7 @@ export interface Publisher {
 }
 export interface Stats {
   'tt' : Stats__2,
+  'log' : Array<string>,
   'icrc72Subscriber' : Stats__1,
   'error' : [] | [string],
   'orchestrator' : Principal,
@@ -302,6 +303,7 @@ export interface Stats {
 }
 export interface Stats__1 {
   'tt' : Stats__2,
+  'log' : Array<string>,
   'subscriptions' : Array<[bigint, SubscriptionRecord]>,
   'readyForSubscription' : boolean,
   'backlogs' : Array<[bigint, Array<[bigint, EventNotification__1]>]>,

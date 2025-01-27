@@ -870,6 +870,16 @@ type PublishError = variant {
   GenericBatchError : Text;
 };
 
+
+type ConfirmError = variant {
+  Unauthorized;
+  NotificationNotFound;
+  EventNotFound;
+  Busy; // This Broadcaster is busy at the moment and cannot process requests
+  GenericError: GenericError;
+  GenericBatchError : Text;
+};
+
 icrc72_publish(vec Event) : vec opt variant{
   #Ok: vec Nat; //notification IDs. - implementation dependent. A service may return ok with an empty vector if it is not practical to return all notification IDs.
   #Err: PublishError;

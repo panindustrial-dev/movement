@@ -147,9 +147,15 @@ export const idlFactory = ({ IDL }) => {
     'message' : IDL.Text,
     'error_code' : IDL.Nat,
   });
+  const ConfirmError = IDL.Variant({
+    'GenericError' : GenericError__1,
+    'Unauthorized' : IDL.Null,
+    'EventNotFound' : IDL.Null,
+    'NotificationNotFound' : IDL.Null,
+  });
   const ConfirmMessageItemResult = IDL.Variant({
     'Ok' : IDL.Nat,
-    'Err' : GenericError__1,
+    'Err' : ConfirmError,
   });
   const ConfirmMessageResult = IDL.Variant({
     'allAccepted' : IDL.Null,

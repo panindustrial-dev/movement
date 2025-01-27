@@ -22,8 +22,12 @@ export interface ArgList {
   'lastExecutionTime' : Time,
 }
 export type Args = [] | [ArgList];
+export type ConfirmError = { 'GenericError' : GenericError } |
+  { 'Unauthorized' : null } |
+  { 'EventNotFound' : null } |
+  { 'NotificationNotFound' : null };
 export type ConfirmMessageItemResult = { 'Ok' : bigint } |
-  { 'Err' : GenericError };
+  { 'Err' : ConfirmError };
 export type ConfirmMessageResult = { 'allAccepted' : null } |
   { 'itemized' : Array<ConfirmMessageItemResult> };
 export interface EmitableEvent {
@@ -276,6 +280,10 @@ export type ICRC16__4 = { 'Int' : bigint } |
   { 'ValueMap' : Array<[ICRC16__4, ICRC16__4]> } |
   { 'Class' : Array<ICRC16Property__4> };
 export interface ICRC75Item { 'principal' : Principal, 'namespace' : Namespace }
+export interface ICRC75Item__1 {
+  'principal' : Principal,
+  'namespace' : Namespace__1,
+}
 export interface InitArgs { 'name' : string }
 export interface InitArgs__1 {
   'restore' : [] | [
@@ -344,6 +352,7 @@ export interface MVEvent {
   >,
 }
 export type Namespace = string;
+export type Namespace__1 = string;
 export interface PublicationRecord { 'id' : bigint, 'namespace' : string }
 export interface PublicationRecordShared {
   'id' : bigint,
@@ -351,7 +360,12 @@ export interface PublicationRecordShared {
   'registeredPublishers' : Array<Principal>,
   'registeredSubscribers' : Array<[Principal, SubscriberRecordShared]>,
   'stakeIndex' : Array<[StakeRecord, Principal]>,
-  'registeredRelay' : Array<[Principal, [] | [Array<string>]]>,
+  'registeredRelay' : Array<
+    [
+      Principal,
+      [] | [Array<[Principal, [] | [string], [] | [[bigint, bigint]]]>],
+    ]
+  >,
   'namespace' : string,
   'registeredRelayer' : Array<Principal>,
 }
@@ -367,10 +381,13 @@ export interface StakeRecord {
 }
 export interface Stats {
   'tt' : Stats__3,
+  'log' : Array<string>,
   'eventStore' : Array<[string, Array<[bigint, EventRecordShared]>]>,
   'icrc72Publisher' : Stats__1,
   'subscriptions' : Array<[bigint, SubscriptionRecordShared]>,
   'icrc72Subscriber' : Stats__2,
+  'validBroadcasters' : { 'list' : Array<Principal> } |
+    { 'icrc75' : ICRC75Item__1 },
   'messageAccumulator' : Array<
     [Principal, Array<[bigint, EventNotification__2]>]
   >,
@@ -387,6 +404,7 @@ export interface Stats {
 }
 export interface Stats__1 {
   'tt' : Stats__3,
+  'log' : Array<string>,
   'icrc72Subscriber' : Stats__2,
   'error' : [] | [string],
   'orchestrator' : Principal,
@@ -401,6 +419,7 @@ export interface Stats__1 {
 }
 export interface Stats__2 {
   'tt' : Stats__3,
+  'log' : Array<string>,
   'subscriptions' : Array<[bigint, SubscriptionRecord]>,
   'readyForSubscription' : boolean,
   'backlogs' : Array<[bigint, Array<[bigint, EventNotification__1]>]>,

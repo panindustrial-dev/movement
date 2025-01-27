@@ -164,6 +164,7 @@ export const idlFactory = ({ IDL }) => {
   });
   const Stats__1 = IDL.Record({
     'tt' : Stats__2,
+    'log' : IDL.Vec(IDL.Text),
     'subscriptions' : IDL.Vec(IDL.Tuple(IDL.Nat, SubscriptionRecord)),
     'readyForSubscription' : IDL.Bool,
     'backlogs' : IDL.Vec(
@@ -196,6 +197,7 @@ export const idlFactory = ({ IDL }) => {
   const ActionId__1 = IDL.Record({ 'id' : IDL.Nat, 'time' : Time });
   const Stats = IDL.Record({
     'tt' : Stats__2,
+    'log' : IDL.Vec(IDL.Text),
     'icrc72Subscriber' : Stats__1,
     'error' : IDL.Opt(IDL.Text),
     'orchestrator' : IDL.Principal,
